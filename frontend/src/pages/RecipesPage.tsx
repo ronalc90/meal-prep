@@ -51,15 +51,15 @@ export default function RecipesPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Recipes</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Recetas</h1>
         <button onClick={() => setShowForm(!showForm)} className="btn-primary">
-          {showForm ? 'Close Form' : '+ New Recipe'}
+          {showForm ? 'Cerrar Formulario' : '+ Nueva Receta'}
         </button>
       </div>
 
       {showForm && (
         <div className="card mb-8">
-          <h2 className="text-lg font-semibold mb-4">Create New Recipe</h2>
+          <h2 className="text-lg font-semibold mb-4">Crear Nueva Receta</h2>
           <RecipeForm
             onSubmit={handleCreateRecipe}
             onCancel={() => setShowForm(false)}
@@ -73,12 +73,12 @@ export default function RecipesPage() {
           <input
             type="text"
             className="input-field flex-1"
-            placeholder="Search recipes..."
+            placeholder="Buscar recetas..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
           <button type="submit" className="btn-secondary">
-            Search
+            Buscar
           </button>
         </div>
       </form>
@@ -89,8 +89,8 @@ export default function RecipesPage() {
         </div>
       ) : recipes.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
-          <p className="text-lg">No recipes found.</p>
-          <p className="text-sm mt-1">Create your first recipe to get started!</p>
+          <p className="text-lg">No se encontraron recetas.</p>
+          <p className="text-sm mt-1">Crea tu primera receta para comenzar.</p>
         </div>
       ) : (
         <>
@@ -108,17 +108,17 @@ export default function RecipesPage() {
                 disabled={page === 1}
                 className="btn-secondary text-sm"
               >
-                Previous
+                Anterior
               </button>
               <span className="text-sm text-gray-500">
-                Page {page} of {totalPages}
+                Pagina {page} de {totalPages}
               </span>
               <button
                 onClick={() => setPage(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
                 className="btn-secondary text-sm"
               >
-                Next
+                Siguiente
               </button>
             </div>
           )}

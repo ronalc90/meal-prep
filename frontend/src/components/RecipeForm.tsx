@@ -19,7 +19,7 @@ interface IngredientRow {
   category: IngredientCategory;
 }
 
-export default function RecipeForm({ onSubmit, onCancel, initialData, submitLabel = 'Create Recipe' }: RecipeFormProps) {
+export default function RecipeForm({ onSubmit, onCancel, initialData, submitLabel = 'Crear Receta' }: RecipeFormProps) {
   const [title, setTitle] = useState(initialData?.title || '');
   const [description, setDescription] = useState(initialData?.description || '');
   const [servings, setServings] = useState(String(initialData?.servings || 4));
@@ -76,7 +76,7 @@ export default function RecipeForm({ onSubmit, onCancel, initialData, submitLabe
           })),
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save recipe');
+      setError(err instanceof Error ? err.message : 'Error al guardar la receta');
     } finally {
       setIsSubmitting(false);
     }
@@ -90,7 +90,7 @@ export default function RecipeForm({ onSubmit, onCancel, initialData, submitLabe
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Titulo</label>
           <input
             type="text"
             className="input-field"
@@ -101,7 +101,7 @@ export default function RecipeForm({ onSubmit, onCancel, initialData, submitLabe
         </div>
 
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Descripcion</label>
           <textarea
             className="input-field"
             rows={3}
@@ -111,7 +111,7 @@ export default function RecipeForm({ onSubmit, onCancel, initialData, submitLabe
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Servings</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Porciones</label>
           <input
             type="number"
             className="input-field"
@@ -122,19 +122,19 @@ export default function RecipeForm({ onSubmit, onCancel, initialData, submitLabe
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Calories</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Calorias</label>
           <input
             type="number"
             className="input-field"
             min="0"
             value={calories}
             onChange={(e) => setCalories(e.target.value)}
-            placeholder="Optional"
+            placeholder="Opcional"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Prep Time (min)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Tiempo de Prep. (min)</label>
           <input
             type="number"
             className="input-field"

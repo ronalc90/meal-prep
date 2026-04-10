@@ -49,16 +49,16 @@ export default function ShoppingListPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Shopping List</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Lista de Compras</h1>
         <div className="flex space-x-2">
           {currentPlan && (
             <button onClick={handleGenerate} className="btn-primary text-sm">
-              {shoppingList ? 'Regenerate' : 'Generate'} List
+              {shoppingList ? 'Regenerar' : 'Generar'} Lista
             </button>
           )}
           {shoppingList && shoppingList.items.length > 0 && (
             <button onClick={handleExport} className="btn-secondary text-sm">
-              Export
+              Exportar
             </button>
           )}
         </div>
@@ -74,18 +74,18 @@ export default function ShoppingListPage() {
         </div>
       ) : !currentPlan ? (
         <div className="card text-center py-12">
-          <p className="text-gray-500 text-lg">No meal plan for this week.</p>
+          <p className="text-gray-500 text-lg">No hay plan de comidas para esta semana.</p>
           <p className="text-sm text-gray-400 mt-1">
-            Create a meal plan first to generate a shopping list.
+            Crea un plan de comidas primero para generar una lista de compras.
           </p>
         </div>
       ) : !shoppingList ? (
         <div className="card text-center py-12">
           <p className="text-gray-500 text-lg mb-4">
-            You have {currentPlan.items.length} meals planned this week.
+            Tienes {currentPlan.items.length} comidas planificadas esta semana.
           </p>
           <button onClick={handleGenerate} className="btn-primary">
-            Generate Shopping List
+            Generar Lista de Compras
           </button>
         </div>
       ) : (
@@ -97,7 +97,7 @@ export default function ShoppingListPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-lg w-full p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Export Shopping List</h2>
+              <h2 className="text-lg font-semibold">Exportar Lista de Compras</h2>
               <button
                 onClick={() => setExportText(null)}
                 className="text-gray-400 hover:text-gray-600 text-xl"
@@ -110,10 +110,10 @@ export default function ShoppingListPage() {
             </pre>
             <div className="flex justify-end space-x-2 mt-4">
               <button onClick={() => setExportText(null)} className="btn-secondary">
-                Close
+                Cerrar
               </button>
               <button onClick={handleCopyExport} className="btn-primary">
-                Copy to Clipboard
+                Copiar al Portapapeles
               </button>
             </div>
           </div>

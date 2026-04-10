@@ -17,7 +17,7 @@ export default function RegisterPage() {
     setError(null);
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError('Las contrasenas no coinciden');
       return;
     }
 
@@ -27,7 +27,7 @@ export default function RegisterPage() {
       await register(email, password, name);
       navigate('/');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      setError(err instanceof Error ? err.message : 'Error al registrarse');
     } finally {
       setIsLoading(false);
     }
@@ -38,7 +38,7 @@ export default function RegisterPage() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-primary-600">MealPrep</h1>
-          <p className="text-gray-500 mt-2">Create your account</p>
+          <p className="text-gray-500 mt-2">Crea tu cuenta</p>
         </div>
 
         <div className="card">
@@ -48,7 +48,7 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
               <input
                 type="text"
                 className="input-field"
@@ -59,7 +59,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Correo electronico</label>
               <input
                 type="email"
                 className="input-field"
@@ -70,7 +70,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Contrasena</label>
               <input
                 type="password"
                 className="input-field"
@@ -83,7 +83,7 @@ export default function RegisterPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Confirm Password
+                Confirmar Contrasena
               </label>
               <input
                 type="password"
@@ -95,14 +95,14 @@ export default function RegisterPage() {
             </div>
 
             <button type="submit" disabled={isLoading} className="btn-primary w-full">
-              {isLoading ? 'Creating account...' : 'Create Account'}
+              {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
             </button>
           </form>
 
           <p className="text-center text-sm text-gray-500 mt-4">
-            Already have an account?{' '}
+            Ya tienes cuenta?{' '}
             <Link to="/login" className="text-primary-600 hover:text-primary-700 font-medium">
-              Sign In
+              Iniciar Sesion
             </Link>
           </p>
         </div>

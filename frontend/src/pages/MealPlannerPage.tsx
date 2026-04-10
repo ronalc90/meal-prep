@@ -108,11 +108,11 @@ export default function MealPlannerPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Meal Planner</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Planificador de Comidas</h1>
         <div className="flex items-center space-x-3">
           {currentPlan && (
             <button onClick={handleAutoGenerate} className="btn-secondary text-sm">
-              Auto-Generate
+              Auto-Generar
             </button>
           )}
         </div>
@@ -124,23 +124,23 @@ export default function MealPlannerPage() {
           onClick={() => setWeekOffset(weekOffset - 1)}
           className="btn-secondary text-sm"
         >
-          &larr; Prev
+          &larr; Anterior
         </button>
         <span className="text-lg font-semibold text-gray-700">
-          Week of {weekStartFormatted}
+          Semana del {weekStartFormatted}
         </span>
         <button
           onClick={() => setWeekOffset(weekOffset + 1)}
           className="btn-secondary text-sm"
         >
-          Next &rarr;
+          Siguiente &rarr;
         </button>
         {weekOffset !== 0 && (
           <button
             onClick={() => setWeekOffset(0)}
             className="text-primary-600 text-sm hover:underline"
           >
-            Today
+            Hoy
           </button>
         )}
       </div>
@@ -155,9 +155,9 @@ export default function MealPlannerPage() {
         </div>
       ) : !currentPlan ? (
         <div className="card text-center py-12">
-          <p className="text-gray-500 text-lg mb-4">No meal plan for this week yet.</p>
+          <p className="text-gray-500 text-lg mb-4">No hay plan de comidas para esta semana.</p>
           <button onClick={handleCreatePlan} className="btn-primary">
-            Create Meal Plan
+            Crear Plan de Comidas
           </button>
         </div>
       ) : (
@@ -175,7 +175,7 @@ export default function MealPlannerPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Select a Recipe</h2>
+              <h2 className="text-lg font-semibold">Seleccionar Receta</h2>
               <button
                 onClick={() => {
                   setShowRecipePicker(false);
@@ -191,7 +191,7 @@ export default function MealPlannerPage() {
               <input
                 type="text"
                 className="input-field"
-                placeholder="Search recipes..."
+                placeholder="Buscar recetas..."
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -213,7 +213,7 @@ export default function MealPlannerPage() {
 
             {recipes.length === 0 && (
               <p className="text-center text-gray-400 py-8">
-                No recipes found. Create some first!
+                No se encontraron recetas. Crea algunas primero.
               </p>
             )}
           </div>
