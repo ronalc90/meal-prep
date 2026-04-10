@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mealprep
+  labels:
+    app.kubernetes.io/name: mealprep
+    app.kubernetes.io/managed-by: kubectl

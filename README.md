@@ -1,39 +1,63 @@
-```
- __  __            _ ____                
-|  \/  | ___  __ _| |  _ \ _ __ ___ _ __  
-| |\/| |/ _ \/ _` | | |_) | '__/ _ \ '_ \ 
-| |  | |  __/ (_| | |  __/| | |  __/ |_) |
-|_|  |_|\___|\__,_|_|_|   |_|  \___| .__/ 
-                                    |_|    
-```
+<p align="center">
+  <h1 align="center">MealPrep</h1>
+  <p align="center">Planificador de comidas semanal con lista de compras automatica</p>
+</p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js"/>
-  <img src="https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express"/>
-  <img src="https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white" alt="Prisma"/>
-  <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React"/>
-  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript"/>
-  <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License MIT"/>
+  <img src="https://img.shields.io/badge/Node.js-18+-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js">
+  <img src="https://img.shields.io/badge/Express-4.x-000000?style=flat-square&logo=express&logoColor=white" alt="Express">
+  <img src="https://img.shields.io/badge/Prisma-5.x-2D3748?style=flat-square&logo=prisma&logoColor=white" alt="Prisma">
+  <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React">
+  <img src="https://img.shields.io/badge/Vite-6.x-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite">
+  <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript">
+  <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" alt="License MIT">
 </p>
 
 ---
 
-**Planifica tus comidas semanales, genera listas de compras automaticas y ahorra tiempo y dinero.**
+## Sobre el Proyecto
 
-MealPrep es una aplicacion full-stack que te permite organizar tu alimentacion semanal de forma inteligente. Gestiona recetas, asignalas a un calendario de 7 dias con 4 comidas diarias, y genera automaticamente listas de compras con agregacion de ingredientes y conversion de unidades.
+**MealPrep** es una aplicacion web full-stack para planificar comidas semanales y generar listas de compras automaticas. Permite a los usuarios crear recetas con ingredientes detallados, organizar un plan de comidas semanal con desayuno, almuerzo, cena y snacks, y luego generar una lista de compras inteligente que agrega cantidades, convierte unidades y agrupa los items por pasillo del supermercado.
+
+### Problema que resuelve
+
+Planificar comidas para la semana y hacer la lista de compras manualmente es tedioso y propenso a errores: se olvidan ingredientes, se compran duplicados y se pierde tiempo en el supermercado. MealPrep automatiza todo este proceso.
 
 ---
 
-## Funcionalidades
+## Caracteristicas
 
-- **Planificador semanal** -- Calendario de 7 dias x 4 comidas (desayuno, almuerzo, merienda, cena)
-- **Base de recetas** -- Crea, edita y busca recetas con ingredientes detallados
-- **Lista de compras automatica** -- Generada a partir del plan semanal con agregacion inteligente de ingredientes
-- **Conversion de unidades** -- Sistema integrado para unificar cantidades en la lista de compras
-- **Seguimiento de presupuesto** -- Controla el gasto semanal en alimentacion
-- **Dashboard** -- Estadisticas y metricas de tu planificacion
-- **Autenticacion JWT** -- Registro e inicio de sesion seguros
-- **Exportacion** -- Exporta la lista de compras como texto plano
+- **Gestion de recetas**: Crear, editar, eliminar y buscar recetas con ingredientes, tiempos de preparacion y calorias
+- **Planificacion semanal**: Calendario interactivo para asignar recetas a cada dia y tipo de comida (desayuno, almuerzo, cena, snack)
+- **Auto-generacion de comidas**: Rellenar automaticamente el plan semanal basado en preferencias y calorias
+- **Lista de compras inteligente**: Generacion automatica con agregacion de ingredientes, conversion de unidades y agrupacion por categoria
+- **Exportar lista de compras**: Formato texto plano listo para compartir o imprimir
+- **Dashboard**: Estadisticas semanales con calorias, progreso de compras y recetas populares
+- **Autenticacion JWT**: Registro, login y rutas protegidas
+- **Busqueda y filtrado**: Por titulo, tiempo de preparacion y calorias
+- **Paginacion**: Listado de recetas con paginacion configurable
+- **Validacion**: Esquemas Zod para todas las entradas del API
+
+---
+
+## Arquitectura
+
+MealPrep es un **monorepo** con dos aplicaciones independientes:
+
+```
+04-MealPrep/
+├── backend/          # API REST con Express + Prisma + SQLite
+├── frontend/         # SPA con React + Vite + TailwindCSS
+└── docs/             # Documentacion del proyecto
+```
+
+### Backend
+API REST en Express con arquitectura en capas: **Routes -> Services -> Prisma (Repository)**. Cada ruta delega la logica de negocio al servicio correspondiente. Validacion de entrada con Zod, autenticacion con JWT y manejo centralizado de errores.
+
+### Frontend
+Single Page Application en React 18 con React Router v6. Estado global gestionado con Context API (AuthContext + MealPlanContext). Comunicacion con el backend via un cliente API centralizado con interceptores de autenticacion. Estilos con TailwindCSS.
+
+> Documentacion detallada de la arquitectura en [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ---
 
@@ -41,48 +65,25 @@ MealPrep es una aplicacion full-stack que te permite organizar tu alimentacion s
 
 | Capa | Tecnologia |
 |------|-----------|
-| **Frontend** | React 18, Vite 6, TypeScript, Tailwind CSS, React Router |
-| **Backend** | Node.js, Express 4, TypeScript |
-| **ORM** | Prisma 5 (SQLite en desarrollo) |
-| **Autenticacion** | JWT (jsonwebtoken + bcryptjs) |
-| **Validacion** | Zod |
-| **Testing** | Jest, Supertest |
-| **Arquitectura** | Monorepo (backend/ + frontend/) |
+| **Runtime** | Node.js 18+ |
+| **Backend Framework** | Express 4.x |
+| **ORM** | Prisma 5.x |
+| **Base de Datos** | SQLite (desarrollo) / PostgreSQL (produccion) |
+| **Validacion** | Zod 3.x |
+| **Autenticacion** | JWT (jsonwebtoken) |
+| **Hashing** | bcryptjs |
+| **Frontend Framework** | React 18 |
+| **Bundler** | Vite 6.x |
+| **Estilos** | TailwindCSS 3.x |
+| **Routing** | React Router 6.x |
+| **Lenguaje** | TypeScript 5.x |
+| **Testing** | Jest + Supertest |
 
 ---
 
-## Arquitectura
+## Instalacion
 
-```
-meal-prep/
-├── backend/                  # API REST (Express + Prisma)
-│   ├── prisma/
-│   │   ├── schema.prisma     # Modelos de datos
-│   │   └── seed.ts           # Datos iniciales
-│   └── src/
-│       ├── middleware/        # Auth, validacion, error handler
-│       ├── routes/            # Endpoints por dominio
-│       ├── services/          # Logica de negocio
-│       ├── types/             # Schemas Zod y tipos
-│       ├── utils/             # JWT, helpers
-│       ├── __tests__/         # Tests unitarios e integracion
-│       ├── app.ts             # Configuracion Express
-│       └── index.ts           # Entry point
-├── frontend/                 # SPA (React + Vite)
-│   └── src/
-│       ├── components/        # Navbar, RecipeCard, WeeklyCalendar, etc.
-│       ├── pages/             # Dashboard, Recipes, MealPlanner, ShoppingList
-│       ├── context/           # AuthContext, MealPlanContext
-│       ├── services/          # Cliente HTTP (api.ts)
-│       └── types/             # Interfaces TypeScript
-└── docs/                     # Documentacion del proyecto
-```
-
----
-
-## Ejecucion Local
-
-### Requisitos previos
+### Prerrequisitos
 
 - Node.js >= 18
 - npm >= 9
@@ -97,17 +98,20 @@ npm install
 
 # Configurar variables de entorno
 cp .env.example .env
+# Editar .env con tus valores
 
-# Generar cliente Prisma y migrar base de datos
+# Generar cliente Prisma y ejecutar migraciones
 npx prisma generate
 npx prisma migrate dev
 
-# (Opcional) Cargar datos de ejemplo
+# (Opcional) Poblar la base de datos con datos de ejemplo
 npm run prisma:seed
 
-# Iniciar en modo desarrollo (puerto 3001)
+# Iniciar en modo desarrollo
 npm run dev
 ```
+
+El servidor inicia en `http://localhost:3004`
 
 ### Frontend
 
@@ -117,109 +121,253 @@ cd frontend
 # Instalar dependencias
 npm install
 
-# Iniciar en modo desarrollo (puerto 5173)
+# Iniciar en modo desarrollo
 npm run dev
 ```
 
-Abre [http://localhost:5173](http://localhost:5173) en tu navegador.
+La aplicacion inicia en `http://localhost:5173` con proxy automatico al backend.
 
 ---
 
-## Endpoints de la API
+## Variables de Entorno
 
-Base URL: `http://localhost:3001/api`
+### Backend (`backend/.env`)
 
-### Salud
+| Variable | Descripcion | Ejemplo |
+|----------|-------------|---------|
+| `DATABASE_URL` | URL de conexion a la base de datos | `file:./dev.db` |
+| `JWT_SECRET` | Secreto para firmar tokens JWT | `mi-secreto-seguro` |
+| `JWT_EXPIRES_IN` | Tiempo de expiracion del token | `7d` |
+| `PORT` | Puerto del servidor | `3004` |
+| `NODE_ENV` | Entorno de ejecucion | `development` |
+| `CORS_ORIGIN` | Origenes permitidos (separados por coma) | `http://localhost:5173` |
 
-| Metodo | Ruta | Descripcion |
-|--------|------|-------------|
-| `GET` | `/health` | Health check del servidor |
+---
 
-### Autenticacion (`/auth`)
+## API Documentation
+
+Base URL: `http://localhost:3004/api`
+
+### Endpoints
 
 | Metodo | Ruta | Descripcion | Auth |
 |--------|------|-------------|------|
-| `POST` | `/auth/register` | Registrar usuario | No |
+| `GET` | `/health` | Health check del servidor | No |
+| `POST` | `/auth/register` | Registrar nuevo usuario | No |
 | `POST` | `/auth/login` | Iniciar sesion | No |
-| `GET` | `/auth/me` | Perfil del usuario actual | Si |
-
-### Recetas (`/recipes`)
-
-| Metodo | Ruta | Descripcion | Auth |
-|--------|------|-------------|------|
+| `GET` | `/auth/me` | Obtener perfil del usuario autenticado | Si |
 | `GET` | `/recipes` | Listar recetas (publicas + propias) | Opcional |
-| `GET` | `/recipes/:id` | Obtener receta por ID | No |
-| `POST` | `/recipes` | Crear receta | Si |
+| `GET` | `/recipes/:id` | Obtener detalle de una receta | No |
+| `POST` | `/recipes` | Crear nueva receta | Si |
 | `PUT` | `/recipes/:id` | Actualizar receta | Si |
 | `DELETE` | `/recipes/:id` | Eliminar receta | Si |
-
-### Planes de comida (`/meal-plans`)
-
-| Metodo | Ruta | Descripcion | Auth |
-|--------|------|-------------|------|
-| `GET` | `/meal-plans/current` | Plan de la semana actual | Si |
-| `GET` | `/meal-plans/week/:weekStart` | Plan por fecha de inicio | Si |
-| `POST` | `/meal-plans` | Crear plan semanal | Si |
-| `PUT` | `/meal-plans/:id` | Actualizar plan | Si |
-| `POST` | `/meal-plans/:id/auto-generate` | Auto-generar sugerencias | Si |
-
-### Listas de compras (`/shopping-lists`)
-
-| Metodo | Ruta | Descripcion | Auth |
-|--------|------|-------------|------|
-| `POST` | `/shopping-lists/generate` | Generar lista desde plan | Si |
+| `GET` | `/meal-plans/current` | Obtener plan de la semana actual | Si |
+| `GET` | `/meal-plans/week/:weekStart` | Obtener plan por fecha de inicio | Si |
+| `POST` | `/meal-plans` | Crear plan de comidas | Si |
+| `PUT` | `/meal-plans/:id` | Actualizar plan de comidas | Si |
+| `POST` | `/meal-plans/:id/auto-generate` | Auto-generar comidas sugeridas | Si |
+| `POST` | `/shopping-lists/generate` | Generar lista de compras desde plan | Si |
 | `GET` | `/shopping-lists/:mealPlanId` | Obtener lista de compras | Si |
 | `PATCH` | `/shopping-lists/:id/items/:itemId` | Marcar/desmarcar item | Si |
-| `GET` | `/shopping-lists/:mealPlanId/export` | Exportar como texto | Si |
+| `GET` | `/shopping-lists/:mealPlanId/export` | Exportar lista como texto plano | Si |
+| `GET` | `/dashboard/stats` | Obtener estadisticas del dashboard | Si |
 
-### Dashboard (`/dashboard`)
-
-| Metodo | Ruta | Descripcion | Auth |
-|--------|------|-------------|------|
-| `GET` | `/dashboard/stats` | Estadisticas del usuario | Si |
+> Documentacion completa con ejemplos curl en [docs/API.md](docs/API.md)
 
 ---
 
-## Modelos de Datos
+## Algoritmo de Lista de Compras
 
-- **User** -- Usuarios con preferencias dieteticas y presupuesto semanal
-- **Recipe** -- Recetas con tiempo de preparacion, calorias y porciones
-- **Ingredient** -- Ingredientes con categoria y unidad base
-- **RecipeIngredient** -- Relacion receta-ingrediente con cantidad y unidad
-- **MealPlan** -- Plan semanal vinculado a un usuario
-- **MealPlanItem** -- Asignacion de receta a dia y tipo de comida
-- **ShoppingList** -- Lista de compras generada desde un plan
-- **ShoppingListItem** -- Items individuales con estado de compra
+El corazon de MealPrep es el algoritmo de generacion de listas de compras:
+
+1. **Recoleccion**: Recorre todos los items del plan semanal con sus recetas e ingredientes
+2. **Escalado**: Multiplica las cantidades por el factor de porciones (`servings / recipe.servings`)
+3. **Normalizacion**: Convierte todas las unidades a su base comun (ml para volumen, g para peso)
+4. **Agregacion**: Suma las cantidades del mismo ingrediente
+5. **Formato legible**: Convierte de unidades base a unidades practicas (g -> kg, ml -> L/cups/tbsp)
+6. **Agrupacion**: Organiza los items por categoria de supermercado (PRODUCE, DAIRY, MEAT, PANTRY, etc.)
+
+### Conversion de Unidades
+
+- **Volumen**: tsp, tbsp, cup, fl oz, ml, L -> base en ml
+- **Peso**: oz, lb, g, kg -> base en g
+- **Sin unidad**: unit, bunch, slices, stalks -> se mantienen tal cual
+
+> Explicacion detallada en [docs/SHOPPING-LIST-ALGORITHM.md](docs/SHOPPING-LIST-ALGORITHM.md)
 
 ---
 
-## Scripts Disponibles
+## Estructura del Proyecto
 
-### Backend
+```
+04-MealPrep/
+├── backend/
+│   ├── prisma/
+│   │   ├── schema.prisma          # Modelo de datos
+│   │   └── seed.ts                # Datos de ejemplo (16 recetas)
+│   ├── src/
+│   │   ├── __tests__/             # Tests unitarios e integracion
+│   │   │   ├── auth.test.ts
+│   │   │   ├── recipes.test.ts
+│   │   │   ├── mealPlans.test.ts
+│   │   │   ├── shoppingList.test.ts
+│   │   │   ├── dashboard.test.ts
+│   │   │   ├── integration.test.ts
+│   │   │   ├── setup.ts
+│   │   │   └── helpers.ts
+│   │   ├── middleware/
+│   │   │   ├── auth.ts            # Middleware JWT
+│   │   │   ├── errorHandler.ts    # Manejo centralizado de errores
+│   │   │   └── validate.ts        # Validacion con Zod
+│   │   ├── routes/
+│   │   │   ├── authRouter.ts
+│   │   │   ├── recipeRouter.ts
+│   │   │   ├── mealPlanRouter.ts
+│   │   │   ├── shoppingListRouter.ts
+│   │   │   └── dashboardRouter.ts
+│   │   ├── services/
+│   │   │   ├── authService.ts
+│   │   │   ├── recipeService.ts
+│   │   │   ├── mealPlanService.ts
+│   │   │   ├── shoppingListService.ts
+│   │   │   └── dashboardService.ts
+│   │   ├── types/
+│   │   │   └── schemas.ts         # Esquemas Zod + tipos
+│   │   ├── utils/
+│   │   │   ├── errors.ts          # Jerarquia de errores
+│   │   │   ├── jwt.ts             # Utilidades JWT
+│   │   │   ├── pagination.ts      # Paginacion generica
+│   │   │   ├── prisma.ts          # Cliente Prisma singleton
+│   │   │   └── unitConversion.ts  # Conversion de unidades
+│   │   ├── app.ts                 # Configuracion Express
+│   │   └── index.ts               # Entry point
+│   ├── jest.config.ts
+│   ├── tsconfig.json
+│   └── package.json
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Navbar.tsx
+│   │   │   ├── ProtectedRoute.tsx
+│   │   │   ├── RecipeCard.tsx
+│   │   │   ├── RecipeForm.tsx
+│   │   │   ├── WeeklyCalendar.tsx
+│   │   │   └── ShoppingListView.tsx
+│   │   ├── context/
+│   │   │   ├── AuthContext.tsx     # Estado de autenticacion
+│   │   │   └── MealPlanContext.tsx # Estado del plan semanal
+│   │   ├── pages/
+│   │   │   ├── LoginPage.tsx
+│   │   │   ├── RegisterPage.tsx
+│   │   │   ├── DashboardPage.tsx
+│   │   │   ├── RecipesPage.tsx
+│   │   │   ├── RecipeDetailPage.tsx
+│   │   │   ├── MealPlannerPage.tsx
+│   │   │   └── ShoppingListPage.tsx
+│   │   ├── services/
+│   │   │   └── api.ts             # Cliente API centralizado
+│   │   ├── types/
+│   │   │   └── index.ts           # Interfaces TypeScript
+│   │   ├── App.tsx
+│   │   ├── main.tsx
+│   │   └── index.css
+│   ├── vite.config.ts
+│   ├── tailwind.config.js
+│   ├── tsconfig.json
+│   └── package.json
+├── docs/                          # Documentacion
+├── .github/workflows/ci.yml       # CI/CD
+└── README.md
+```
 
-| Script | Descripcion |
-|--------|-------------|
-| `npm run dev` | Servidor de desarrollo con hot-reload |
-| `npm run build` | Compilar TypeScript |
-| `npm start` | Ejecutar build de produccion |
-| `npm test` | Ejecutar tests |
-| `npm run prisma:seed` | Cargar datos de ejemplo |
+---
 
-### Frontend
+## Decisiones Tecnicas
 
-| Script | Descripcion |
-|--------|-------------|
-| `npm run dev` | Servidor Vite de desarrollo |
-| `npm run build` | Build de produccion |
-| `npm run preview` | Preview del build |
-| `npm run lint` | Ejecutar ESLint |
+| Decision | Justificacion |
+|----------|--------------|
+| **Express sobre Fastify** | Ecosistema maduro, mayor cantidad de middleware disponible y familiaridad del equipo |
+| **Prisma sobre TypeORM** | Type-safety nativo, migraciones declarativas, cliente generado con autocompletado |
+| **Vite sobre CRA** | Build significativamente mas rapido, HMR instantaneo, configuracion minima |
+| **Monorepo sin herramientas** | Simplicidad para un MVP; cada app tiene su propio package.json sin necesidad de Turborepo/Nx |
+| **SQLite en desarrollo** | Zero-config, portable; cambia a PostgreSQL en produccion via Prisma |
+| **Context API sobre Redux** | Estado predecible sin boilerplate para una aplicacion de esta escala |
+| **Zod sobre Joi** | Inferencia de tipos TypeScript nativa, menor bundle size |
+
+> Decisiones detalladas con contexto completo en [docs/DECISIONS.md](docs/DECISIONS.md)
+
+---
+
+## Testing
+
+```bash
+cd backend
+
+# Ejecutar todos los tests
+npm test
+
+# Ejecutar tests en modo watch
+npm run test:watch
+
+# Ejecutar tests con cobertura
+npx jest --coverage
+```
+
+### Cobertura de Tests
+
+- Autenticacion (registro, login, perfil)
+- CRUD completo de recetas
+- Planes de comida (crear, actualizar, auto-generar)
+- Listas de compras (generar, toggle items, exportar)
+- Dashboard (estadisticas)
+- Integracion end-to-end
+
+---
+
+## Despliegue
+
+### Backend (Railway)
+
+```bash
+# El backend se despliega directamente desde el directorio backend/
+# Railway detecta Node.js automaticamente
+# Configurar variables de entorno en el dashboard de Railway
+```
+
+### Frontend (Vercel)
+
+```bash
+cd frontend
+npm run build
+# El directorio dist/ se despliega en Vercel
+```
+
+> Guia completa de despliegue en [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+
+---
+
+## Roadmap
+
+- [ ] Soporte para multiples idiomas (i18n)
+- [ ] Modo offline con Service Workers
+- [ ] Compartir planes de comida entre usuarios
+- [ ] Integracion con APIs de nutricion para datos mas precisos
+- [ ] Notificaciones push para recordatorios de compras
+- [ ] Escanear codigos de barras para marcar items comprados
+- [ ] Presupuesto semanal con tracking de gastos
+- [ ] Exportar lista de compras a formato PDF
+- [ ] App movil con React Native
+
+---
+
+## Licencia
+
+Distribuido bajo la Licencia MIT. Ver [LICENSE](LICENSE) para mas informacion.
 
 ---
 
 ## Autor
 
-**Ronald** -- [github.com/ronalc90](https://github.com/ronalc90)
+Desarrollado por **Ronald**.
 
-## Licencia
-
-Este proyecto esta bajo la licencia [MIT](LICENSE).
+GitHub: [@ronalc90](https://github.com/ronalc90)

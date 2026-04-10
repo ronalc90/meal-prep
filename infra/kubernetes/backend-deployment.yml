@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mealprep-backend
+  namespace: mealprep
+  labels:
+    app: mealprep-backend
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mealprep-backend
+  template:
+    metadata:
+      labels:
+        app: mealprep-backend
+        tier: backend
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/ronalc90/meal-prep/backend:latest
+          ports:
+            - containerPort: 3004
+              protocol: TCP
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: '3004'
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: mealprep-secrets
+                  key: database-url
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: mealprep-secrets
+                  key: jwt-secret
+            - name: JWT_EXPIRES_IN
+              value: '7d'
+            - name: CORS_ORIGIN
+              value: 'https://mealprep.app'
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3004
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3004
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+      restartPolicy: Always
