@@ -6,14 +6,14 @@ interface WeeklyCalendarProps {
   onRemoveItem: (item: MealPlanItem) => void;
 }
 
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAYS = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
 const MEAL_TYPES: MealType[] = ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'];
 
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
-  BREAKFAST: 'Breakfast',
-  LUNCH: 'Lunch',
-  DINNER: 'Dinner',
-  SNACK: 'Snack',
+  BREAKFAST: 'Desayuno',
+  LUNCH: 'Almuerzo',
+  DINNER: 'Cena',
+  SNACK: 'Merienda',
 };
 
 const MEAL_TYPE_COLORS: Record<MealType, string> = {
@@ -91,7 +91,7 @@ function MealSlot({ item, onRemove }: { item: MealPlanItem; onRemove: () => void
             onRemove();
           }}
           className="text-gray-400 hover:text-red-500 ml-1 flex-shrink-0"
-          title="Remove"
+          title="Eliminar"
         >
           x
         </button>

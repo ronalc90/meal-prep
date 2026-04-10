@@ -24,25 +24,25 @@ export default function Navbar() {
                   to="/"
                   className="text-gray-600 hover:text-primary-600 transition-colors font-medium"
                 >
-                  Dashboard
+                  Inicio
                 </Link>
                 <Link
                   to="/recipes"
                   className="text-gray-600 hover:text-primary-600 transition-colors font-medium"
                 >
-                  Recipes
+                  Recetas
                 </Link>
                 <Link
                   to="/meal-planner"
                   className="text-gray-600 hover:text-primary-600 transition-colors font-medium"
                 >
-                  Meal Planner
+                  Planificador
                 </Link>
                 <Link
                   to="/shopping-list"
                   className="text-gray-600 hover:text-primary-600 transition-colors font-medium"
                 >
-                  Shopping List
+                  Lista de Compras
                 </Link>
               </div>
             )}
@@ -55,16 +55,16 @@ export default function Navbar() {
                   {user.name}
                 </span>
                 <button onClick={handleLogout} className="btn-secondary text-sm">
-                  Logout
+                  Cerrar Sesion
                 </button>
               </>
             ) : (
               <div className="flex space-x-2">
                 <Link to="/login" className="btn-secondary text-sm">
-                  Login
+                  Iniciar Sesion
                 </Link>
                 <Link to="/register" className="btn-primary text-sm">
-                  Sign Up
+                  Registrarse
                 </Link>
               </div>
             )}
@@ -75,16 +75,16 @@ export default function Navbar() {
         {user && (
           <div className="sm:hidden pb-3 flex space-x-4 overflow-x-auto">
             <Link to="/" className="text-sm text-gray-600 whitespace-nowrap">
-              Dashboard
+              Inicio
             </Link>
             <Link to="/recipes" className="text-sm text-gray-600 whitespace-nowrap">
-              Recipes
+              Recetas
             </Link>
             <Link to="/meal-planner" className="text-sm text-gray-600 whitespace-nowrap">
-              Planner
+              Planificador
             </Link>
             <Link to="/shopping-list" className="text-sm text-gray-600 whitespace-nowrap">
-              Shopping
+              Compras
             </Link>
           </div>
         )}

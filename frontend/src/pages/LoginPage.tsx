@@ -19,7 +19,7 @@ export default function LoginPage() {
       await login(email, password);
       navigate('/');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      setError(err instanceof Error ? err.message : 'Error al iniciar sesion');
     } finally {
       setIsLoading(false);
     }
@@ -30,7 +30,7 @@ export default function LoginPage() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-primary-600">MealPrep</h1>
-          <p className="text-gray-500 mt-2">Sign in to your account</p>
+          <p className="text-gray-500 mt-2">Inicia sesion en tu cuenta</p>
         </div>
 
         <div className="card">
@@ -40,7 +40,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Correo electronico</label>
               <input
                 type="email"
                 className="input-field"
@@ -52,7 +52,7 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Contrasena</label>
               <input
                 type="password"
                 className="input-field"
@@ -64,14 +64,14 @@ export default function LoginPage() {
             </div>
 
             <button type="submit" disabled={isLoading} className="btn-primary w-full">
-              {isLoading ? 'Signing in...' : 'Sign In'}
+              {isLoading ? 'Ingresando...' : 'Iniciar Sesion'}
             </button>
           </form>
 
           <p className="text-center text-sm text-gray-500 mt-4">
-            Don&apos;t have an account?{' '}
+            No tienes cuenta?{' '}
             <Link to="/register" className="text-primary-600 hover:text-primary-700 font-medium">
-              Sign Up
+              Registrate
             </Link>
           </p>
         </div>

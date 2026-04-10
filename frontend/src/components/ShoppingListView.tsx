@@ -6,14 +6,14 @@ interface ShoppingListViewProps {
 }
 
 const CATEGORY_LABELS: Record<IngredientCategory, string> = {
-  PRODUCE: 'Produce',
-  DAIRY: 'Dairy',
-  MEAT: 'Meat & Seafood',
-  PANTRY: 'Pantry',
-  FROZEN: 'Frozen',
-  BAKERY: 'Bakery',
-  BEVERAGES: 'Beverages',
-  OTHER: 'Other',
+  PRODUCE: 'Frutas y Verduras',
+  DAIRY: 'Lacteos',
+  MEAT: 'Carnes y Mariscos',
+  PANTRY: 'Despensa',
+  FROZEN: 'Congelados',
+  BAKERY: 'Panaderia',
+  BEVERAGES: 'Bebidas',
+  OTHER: 'Otros',
 };
 
 const CATEGORY_ICONS: Record<IngredientCategory, string> = {
@@ -47,9 +47,9 @@ export default function ShoppingListView({ items, onToggleItem }: ShoppingListVi
       {/* Progress bar */}
       <div className="card">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium text-gray-700">Shopping Progress</span>
+          <span className="text-sm font-medium text-gray-700">Progreso de Compras</span>
           <span className="text-sm text-gray-500">
-            {checkedCount}/{totalCount} items ({progress}%)
+            {checkedCount}/{totalCount} articulos ({progress}%)
           </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2.5">
@@ -97,8 +97,8 @@ export default function ShoppingListView({ items, onToggleItem }: ShoppingListVi
 
       {items.length === 0 && (
         <div className="text-center py-12 text-gray-400">
-          <p className="text-lg">No items in your shopping list.</p>
-          <p className="text-sm mt-1">Generate one from your meal plan!</p>
+          <p className="text-lg">No hay articulos en tu lista de compras.</p>
+          <p className="text-sm mt-1">Genera una desde tu plan de comidas.</p>
         </div>
       )}
     </div>

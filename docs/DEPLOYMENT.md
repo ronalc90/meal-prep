@@ -3,138 +3,130 @@
 ## Arquitectura de Despliegue
 
 ```
-┌─────────────────┐     ┌─────────────────┐
-│   Vercel         │     │   Railway        │
-│   (Frontend)     │────>│   (Backend)      │
-│                  │     │                  │
-│  React + Vite    │     │  Express +       │
-│  Static files    │     │  Prisma +        │
-│                  │     │  PostgreSQL      │
-└─────────────────┘     └─────────────────┘
+┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│    Vercel        │     │    Railway        │     │   PostgreSQL    │
+│   (Frontend)     │────>│   (Backend API)   │────>│   (Railway DB)  │
+│   React SPA      │     │   Express + Node  │     │                 │
+└─────────────────┘     └──────────────────┘     └─────────────────┘
 ```
 
 ---
 
 ## Backend - Railway
 
-### 1. Preparar el proyecto
+### Prerrequisitos
 
-Asegurarse de que el backend compila correctamente:
+- Cuenta en [Railway](https://railway.app)
+- Repositorio en GitHub
 
-```bash
-cd backend
-npm run build
-npm start  # Verificar que inicia sin errores
-```
+### Pasos
 
-### 2. Crear proyecto en Railway
+1. **Crear proyecto en Railway**
+   - Conectar repositorio de GitHub
+   - Seleccionar el directorio `backend/` como root
 
-1. Ir a [railway.app](https://railway.app)
-2. Crear nuevo proyecto desde repositorio de GitHub
-3. Seleccionar el repositorio `ronalc90/meal-prep`
-4. Configurar el Root Directory como `backend`
+2. **Agregar base de datos PostgreSQL**
+   - En el dashboard de Railway, agregar servicio PostgreSQL
+   - Railway genera automaticamente la variable `DATABASE_URL`
 
-### 3. Agregar base de datos PostgreSQL
+3. **Configurar variables de entorno**
 
-1. En el dashboard de Railway, hacer clic en "New" -> "Database" -> "PostgreSQL"
-2. Railway genera automaticamente la variable `DATABASE_URL`
+   | Variable | Valor |
+   |----------|-------|
+   | `DATABASE_URL` | (auto-generada por Railway) |
+   | `JWT_SECRET` | Generar con `openssl rand -base64 32` |
+   | `JWT_EXPIRES_IN` | `7d` |
+   | `NODE_ENV` | `production` |
+   | `PORT` | `3004` |
+   | `CORS_ORIGIN` | `https://tu-dominio-frontend.vercel.app` |
 
-### 4. Configurar variables de entorno
+4. **Configurar build**
 
-En el dashboard de Railway, agregar:
+   Railway detecta Node.js automaticamente. Los comandos se configuran:
 
-| Variable | Valor |
-|----------|-------|
-| `DATABASE_URL` | (auto-generada por Railway PostgreSQL) |
-| `JWT_SECRET` | (generar un secreto seguro de 64+ caracteres) |
-| `JWT_EXPIRES_IN` | `7d` |
-| `NODE_ENV` | `production` |
-| `CORS_ORIGIN` | `https://tu-app.vercel.app` |
-| `PORT` | `3004` |
+   ```
+   Build Command: npm install && npx prisma generate && npx prisma migrate deploy && npm run build
+   Start Command: npm start
+   ```
 
-### 5. Configurar comandos
+5. **Actualizar schema.prisma para PostgreSQL**
 
-En la configuracion del servicio:
+   Cambiar el provider en produccion:
+   ```prisma
+   datasource db {
+     provider = "postgresql"
+     url      = env("DATABASE_URL")
+   }
+   ```
 
-| Campo | Valor |
-|-------|-------|
-| Build Command | `npm install && npx prisma generate && npx prisma migrate deploy && npm run build` |
-| Start Command | `npm start` |
+6. **Seed inicial (opcional)**
 
-### 6. Ejecutar migraciones
+   Ejecutar una vez despues del primer deploy:
+   ```bash
+   railway run npm run prisma:seed
+   ```
 
-Railway ejecuta el build command automaticamente. Las migraciones se aplican con `prisma migrate deploy`.
-
-Para poblar datos iniciales (opcional):
-
-```bash
-railway run npm run prisma:seed
-```
-
-### 7. Cambiar de SQLite a PostgreSQL
-
-Actualizar `backend/prisma/schema.prisma`:
-
-```prisma
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-```
-
-Generar nueva migracion:
+### Verificar despliegue
 
 ```bash
-npx prisma migrate dev --name switch-to-postgres
+curl https://tu-backend.railway.app/api/health
+# Respuesta: { "status": "ok", "timestamp": "..." }
 ```
 
 ---
 
 ## Frontend - Vercel
 
-### 1. Preparar el proyecto
+### Prerrequisitos
 
-```bash
-cd frontend
-npm run build  # Verificar que compila sin errores
-```
+- Cuenta en [Vercel](https://vercel.com)
+- Repositorio en GitHub
 
-### 2. Crear proyecto en Vercel
+### Pasos
 
-1. Ir a [vercel.com](https://vercel.com)
-2. Importar repositorio `ronalc90/meal-prep`
-3. Configurar:
-   - **Root Directory**: `frontend`
-   - **Framework Preset**: Vite
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
+1. **Importar proyecto en Vercel**
+   - Conectar repositorio
+   - Configurar root directory como `frontend/`
 
-### 3. Configurar variables de entorno
+2. **Configurar variables de entorno**
 
-| Variable | Valor |
-|----------|-------|
-| `VITE_API_URL` | `https://tu-backend.railway.app/api` |
+   | Variable | Valor |
+   |----------|-------|
+   | `VITE_API_URL` | `https://tu-backend.railway.app/api` |
 
-### 4. Configurar proxy en produccion
+3. **Configurar build**
 
-En produccion, el frontend ya no usa el proxy de Vite. Actualizar `frontend/src/services/api.ts` para usar la URL de la API en produccion:
+   Vercel detecta Vite automaticamente:
 
-```typescript
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
-```
+   ```
+   Build Command: npm run build
+   Output Directory: dist
+   Install Command: npm install
+   ```
 
-### 5. Configurar dominio personalizado (opcional)
+4. **Configurar rewrites para SPA**
 
-En el dashboard de Vercel:
-1. Ir a Settings -> Domains
-2. Agregar dominio personalizado
-3. Configurar DNS segun las instrucciones de Vercel
+   Crear `frontend/vercel.json`:
+   ```json
+   {
+     "rewrites": [
+       { "source": "/(.*)", "destination": "/index.html" }
+     ]
+   }
+   ```
+
+5. **Actualizar el cliente API**
+
+   Modificar `frontend/src/services/api.ts` para usar la variable de entorno:
+   ```typescript
+   const API_BASE = import.meta.env.VITE_API_URL || '/api';
+   ```
 
 ---
 
-## Docker
+## Docker (Alternativa)
 
-### Dockerfile para el Backend
+### Backend Dockerfile
 
 Crear `backend/Dockerfile`:
 
@@ -152,112 +144,105 @@ RUN npx prisma generate
 COPY . .
 RUN npm run build
 
-FROM node:18-alpine
+FROM node:18-alpine AS runner
 
 WORKDIR /app
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/package.json ./
 COPY --from=builder /app/prisma ./prisma
 
 ENV NODE_ENV=production
-
 EXPOSE 3004
 
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/src/index.js"]
 ```
 
-### docker-compose.yml
+### Docker Compose (desarrollo)
 
-Crear `docker-compose.yml` en la raiz del proyecto:
+Crear `docker-compose.yml` en la raiz:
 
 ```yaml
 version: '3.8'
 
 services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: mealprep
+      POSTGRES_USER: mealprep
+      POSTGRES_PASSWORD: mealprep
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    build: ./backend
     ports:
       - "3004:3004"
     environment:
       DATABASE_URL: postgresql://mealprep:mealprep@db:5432/mealprep
-      JWT_SECRET: ${JWT_SECRET:-change-this-secret}
+      JWT_SECRET: dev-secret-change-in-production
       JWT_EXPIRES_IN: 7d
-      NODE_ENV: production
+      NODE_ENV: development
+      PORT: "3004"
       CORS_ORIGIN: http://localhost:5173
-      PORT: 3004
     depends_on:
-      db:
-        condition: service_healthy
+      - db
 
-  db:
-    image: postgres:16-alpine
+  frontend:
+    build: ./frontend
     ports:
-      - "5432:5432"
+      - "5173:5173"
     environment:
-      POSTGRES_USER: mealprep
-      POSTGRES_PASSWORD: mealprep
-      POSTGRES_DB: mealprep
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mealprep"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      VITE_API_URL: http://localhost:3004/api
 
 volumes:
   pgdata:
 ```
 
-### Ejecutar con Docker
+### Construir y ejecutar
 
 ```bash
-# Construir e iniciar
-docker compose up -d
-
-# Ver logs
-docker compose logs -f backend
-
-# Ejecutar seed (opcional)
-docker compose exec backend npm run prisma:seed
-
-# Detener
-docker compose down
+docker-compose up --build
 ```
 
 ---
 
-## CI/CD con GitHub Actions
+## Migraciones en Produccion
 
-El pipeline de CI se ejecuta automaticamente en cada push a `main` y en pull requests. Ver `.github/workflows/ci.yml`.
+### Ejecutar migraciones
 
-### Pipeline
+```bash
+# Railway
+railway run npx prisma migrate deploy
 
-1. **Backend**: Instalar deps -> Generar Prisma -> Migrar -> Tests -> Build
-2. **Frontend**: Instalar deps -> Build
+# Docker
+docker exec -it mealprep-backend npx prisma migrate deploy
+```
 
-### Despliegue automatico
+### Crear nueva migracion
 
-- **Railway**: Conectar el repositorio. Railway despliega automaticamente en cada push a `main`
-- **Vercel**: Conectar el repositorio. Vercel despliega automaticamente en cada push a `main`
+```bash
+# En desarrollo local
+cd backend
+npx prisma migrate dev --name nombre_de_la_migracion
+```
 
 ---
 
-## Checklist de Produccion
+## Checklist de Despliegue
 
-- [ ] Cambiar base de datos a PostgreSQL
-- [ ] Generar JWT_SECRET seguro (64+ caracteres aleatorios)
-- [ ] Configurar CORS_ORIGIN con el dominio del frontend
-- [ ] Establecer NODE_ENV=production
-- [ ] Configurar HTTPS
-- [ ] Agregar rate limiting al backend
-- [ ] Configurar backups de base de datos
-- [ ] Monitorear logs y errores
-- [ ] Configurar dominio personalizado
+- [ ] Variables de entorno configuradas en Railway
+- [ ] `JWT_SECRET` generado de forma segura (no usar el default)
+- [ ] `CORS_ORIGIN` apunta al dominio correcto del frontend
+- [ ] Migraciones ejecutadas en produccion
+- [ ] Health check responde correctamente
+- [ ] Frontend apunta a la URL correcta del backend
+- [ ] `vercel.json` configurado para rewrites SPA
+- [ ] Datos de seed cargados (si aplica)
 
 ---
 

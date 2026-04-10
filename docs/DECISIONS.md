@@ -1,241 +1,218 @@
 # Decisiones Tecnicas (ADR)
 
-Registro de decisiones de arquitectura para MealPrep.
+Registro de decisiones arquitectonicas para MealPrep.
 
 ---
 
 ## ADR-001: Express sobre Fastify
 
-**Estado**: Aceptado  
-**Fecha**: 2024-10
+**Estado**: Aceptada
 
-### Contexto
+**Contexto**: Se necesitaba un framework HTTP para construir la API REST del backend.
 
-Se necesita un framework HTTP para el backend de la API REST. Las principales opciones son Express y Fastify.
+**Opciones consideradas**:
+- Express 4.x
+- Fastify 4.x
+- Koa 2.x
 
-### Decision
+**Decision**: Express
 
-Usar **Express 4.x**.
+**Justificacion**:
+- Ecosistema mas maduro con la mayor cantidad de middleware disponible
+- Documentacion extensa y comunidad activa
+- Curva de aprendizaje minima para cualquier desarrollador Node.js
+- Compatibilidad garantizada con todas las librerias del stack (Prisma, Zod, etc.)
+- Para un MVP, la diferencia de rendimiento con Fastify es irrelevante
+- Mayor facilidad para encontrar soluciones a problemas comunes
 
-### Justificacion
-
-- Ecosistema mas maduro con mayor cantidad de middleware disponible
-- Documentacion exhaustiva y comunidad activa
-- Familiaridad del equipo: menor curva de aprendizaje
-- Para un MVP, la diferencia de rendimiento con Fastify no es significativa
-- Amplia compatibilidad con herramientas de testing (Supertest)
-
-### Alternativa rechazada
-
-Fastify ofrece mejor rendimiento en benchmarks y un sistema de plugins mas estructurado, pero agrega complejidad innecesaria para el alcance actual del proyecto.
+**Consecuencias**: Rendimiento ligeramente menor en benchmarks sinteticos comparado con Fastify, pero irrelevante para la escala actual.
 
 ---
 
 ## ADR-002: Prisma sobre TypeORM
 
-**Estado**: Aceptado  
-**Fecha**: 2024-10
+**Estado**: Aceptada
 
-### Contexto
+**Contexto**: Se necesitaba un ORM para interactuar con la base de datos desde TypeScript.
 
-Se necesita un ORM para interactuar con la base de datos relacional. Las opciones principales son Prisma, TypeORM y Drizzle.
+**Opciones consideradas**:
+- Prisma 5.x
+- TypeORM 0.3.x
+- Drizzle ORM
+- Knex.js (query builder)
 
-### Decision
+**Decision**: Prisma
 
-Usar **Prisma 5.x**.
+**Justificacion**:
+- Cliente generado con autocompletado completo en el IDE
+- Type-safety nativo: las queries retornan tipos exactos segun los includes/selects
+- Esquema declarativo (`schema.prisma`) como fuente unica de verdad del modelo de datos
+- Sistema de migraciones integrado y predecible
+- Soporte nativo para SQLite (desarrollo) y PostgreSQL (produccion) con el mismo esquema
+- Transacciones interactivas con `$transaction()`
+- El pattern `upsert` simplifica la gestion de ingredientes compartidos
 
-### Justificacion
-
-- **Type-safety nativo**: El cliente generado ofrece autocompletado completo basado en el schema
-- **Schema declarativo**: `schema.prisma` es una fuente de verdad clara para el modelo de datos
-- **Migraciones automaticas**: `prisma migrate dev` genera migraciones SQL a partir de cambios en el schema
-- **Studio visual**: `npx prisma studio` permite inspeccionar datos durante desarrollo
-- **Multi-database**: Cambiar de SQLite a PostgreSQL solo requiere modificar el provider en el schema
-
-### Alternativas rechazadas
-
-- **TypeORM**: Decoradores pesados, menor type-safety, configuracion mas compleja
-- **Drizzle**: Mas cercano a SQL puro, buena opcion pero ecosistema menos maduro que Prisma
+**Consecuencias**: 
+- Dependencia del CLI de Prisma para generar el cliente
+- El esquema Prisma es un DSL propio que no es SQL estandar
+- Algunas consultas complejas requieren `$queryRaw`
 
 ---
 
 ## ADR-003: Vite sobre Create React App
 
-**Estado**: Aceptado  
-**Fecha**: 2024-10
+**Estado**: Aceptada
 
-### Contexto
+**Contexto**: Se necesitaba un bundler/dev server para la aplicacion React del frontend.
 
-Se necesita un bundler y dev server para la aplicacion React del frontend.
+**Opciones consideradas**:
+- Vite 6.x
+- Create React App (react-scripts)
+- Next.js
+- Remix
 
-### Decision
+**Decision**: Vite
 
-Usar **Vite 6.x**.
+**Justificacion**:
+- Build de produccion significativamente mas rapido que CRA (Rollup vs Webpack)
+- Hot Module Replacement (HMR) instantaneo en desarrollo
+- Configuracion minima out-of-the-box
+- Proxy de desarrollo integrado para redirigir `/api` al backend
+- CRA esta oficialmente deprecado
+- No se necesita SSR ni file-based routing (descarta Next.js/Remix)
+- Soporte nativo para TypeScript y path aliases
 
-### Justificacion
-
-- **Build drasticamente mas rapido**: Vite usa esbuild para pre-bundling, resultando en builds 10-100x mas rapidos que Webpack
-- **HMR instantaneo**: Hot Module Replacement sub-segundo independientemente del tamano de la app
-- **Configuracion minima**: Funciona out-of-the-box con React + TypeScript
-- **Proxy integrado**: Configuracion simple de proxy para redirigir `/api` al backend
-- **CRA esta deprecado**: Create React App ya no recibe mantenimiento activo
-
-### Alternativa rechazada
-
-Create React App (CRA) fue el estandar por anos, pero esta oficialmente deprecado. Webpack puro es una opcion pero requiere configuracion manual significativa.
-
----
-
-## ADR-004: Monorepo sin herramientas de monorepo
-
-**Estado**: Aceptado  
-**Fecha**: 2024-10
-
-### Contexto
-
-La aplicacion tiene dos partes (backend y frontend) que necesitan coexistir en un repositorio.
-
-### Decision
-
-Usar una estructura de **monorepo simple** con directorios separados, cada uno con su propio `package.json`. Sin Turborepo, Nx, Lerna ni workspaces de npm.
-
-### Justificacion
-
-- **Simplicidad**: Para un MVP con dos aplicaciones, las herramientas de monorepo agregan complejidad innecesaria
-- **Independencia**: Cada app se instala, compila y despliega de forma independiente
-- **CI simple**: GitHub Actions ejecuta jobs separados para backend y frontend
-- **Zero config**: No hay archivos de configuracion adicionales ni learning curve
-
-### Cuando reconsiderar
-
-Si el proyecto crece a 3+ aplicaciones o se necesita compartir codigo entre ellas (ej: tipos compartidos), evaluar migrar a npm workspaces o Turborepo.
+**Consecuencias**: Sin SSR ni generacion estatica. Si en el futuro se necesita SEO, habria que migrar a Next.js.
 
 ---
 
-## ADR-005: SQLite en desarrollo, PostgreSQL en produccion
+## ADR-004: Monorepo Simple sin Herramientas
 
-**Estado**: Aceptado  
-**Fecha**: 2024-10
+**Estado**: Aceptada
 
-### Contexto
+**Contexto**: Backend y frontend son dos aplicaciones Node.js que comparten repositorio.
 
-Se necesita una base de datos relacional. En desarrollo se prioriza la simplicidad; en produccion, la robustez.
+**Opciones consideradas**:
+- Monorepo simple (directorios independientes)
+- Turborepo
+- Nx
+- npm/yarn/pnpm workspaces
 
-### Decision
+**Decision**: Monorepo simple con directorios `backend/` y `frontend/`, cada uno con su propio `package.json`.
 
-Usar **SQLite** durante desarrollo y **PostgreSQL** en produccion. Prisma abstrae las diferencias entre ambos motores.
+**Justificacion**:
+- Para un MVP con dos aplicaciones, la complejidad de Turborepo/Nx no se justifica
+- Cada aplicacion puede instalarse, buildear y desplegarse de forma independiente
+- Sin dependencias compartidas que gestionar (los tipos se duplican intencionalmente)
+- CI/CD simple: cada job trabaja en su directorio
+- Facilidad para separar en dos repos en el futuro si fuera necesario
 
-### Justificacion
-
-- **SQLite en desarrollo**:
-  - Zero-config: un archivo `.db` sin instalar nada
-  - Portable: se puede borrar y recrear al instante
-  - Ideal para desarrollo local y tests
-
-- **PostgreSQL en produccion**:
-  - Concurrencia robusta para multiples usuarios
-  - Soporte completo de tipos, indices y constraints
-  - Disponible como servicio gestionado en Railway, Supabase, Neon, etc.
-
-### Cambiar de motor
-
-Solo requiere modificar `provider` en `schema.prisma` y regenerar migraciones:
-
-```prisma
-datasource db {
-  provider = "postgresql"  // Cambiar de "sqlite" a "postgresql"
-  url      = env("DATABASE_URL")
-}
-```
+**Consecuencias**: 
+- Tipos duplicados entre frontend y backend (se mantienen sincronizados manualmente)
+- Sin cache compartido de builds entre aplicaciones
+- Posible deriva entre las interfaces si no se actualizan ambos lados
 
 ---
 
-## ADR-006: Sistema de conversion de unidades
+## ADR-005: SQLite en Desarrollo, PostgreSQL en Produccion
 
-**Estado**: Aceptado  
-**Fecha**: 2024-10
+**Estado**: Aceptada
 
-### Contexto
+**Contexto**: Se necesitaba una base de datos para desarrollo local y otra para produccion.
 
-La generacion de listas de compras necesita agregar cantidades de ingredientes que pueden estar en distintas unidades (cups, tbsp, g, kg, etc.).
+**Decision**: SQLite para desarrollo, PostgreSQL para produccion.
 
-### Decision
+**Justificacion**:
+- SQLite no requiere instalacion ni configuracion (zero-config)
+- Base de datos como archivo, facil de borrar y recrear
+- Prisma abstrae las diferencias entre engines con el mismo esquema
+- PostgreSQL en produccion via Railway con conexion automatica
+- Sin necesidad de Docker para desarrollo local
 
-Implementar un **sistema de conversion basado en unidades base** (ml para volumen, g para peso) con tablas de factores de conversion.
-
-### Justificacion
-
-- **Normalizacion**: Convertir todo a una base comun permite sumar cantidades directamente
-- **Extensibilidad**: Agregar nuevas unidades solo requiere agregar una entrada a la tabla
-- **Precision**: Los factores de conversion son constantes estandarizadas
-- **Formato legible**: La re-conversion a unidades practicas (kg, cups) hace la lista util para el usuario
-
-### Diseno
-
-El sistema tiene tres funciones principales:
-
-1. `normalizeUnit(quantity, unit)`: Convierte a unidad base
-2. `areUnitsCompatible(unit1, unit2)`: Verifica si dos unidades pueden sumarse
-3. `formatForDisplay(quantity, baseUnit)`: Convierte de base a unidad practica
-
-### Limitaciones conocidas
-
-- No maneja conversiones entre peso y volumen (ej: cups de harina a gramos)
-- Las unidades personalizadas (bunch, slices) no se convierten entre si
-- No considera densidades de ingredientes
+**Consecuencias**:
+- Algunas funcionalidades de PostgreSQL (JSONB, arrays, full-text search) no estan disponibles en SQLite
+- Las migraciones pueden comportarse ligeramente diferente entre engines
+- Para queries complejas, hay que verificar compatibilidad con ambos engines
 
 ---
 
-## ADR-007: Context API sobre Redux
+## ADR-006: Context API sobre Redux
 
-**Estado**: Aceptado  
-**Fecha**: 2024-10
+**Estado**: Aceptada
 
-### Contexto
+**Contexto**: Se necesitaba gestion de estado global en el frontend React.
 
-El frontend necesita gestion de estado global para autenticacion y el plan de comidas.
+**Opciones consideradas**:
+- React Context API
+- Redux Toolkit
+- Zustand
+- Jotai
 
-### Decision
+**Decision**: Context API con dos providers: `AuthContext` y `MealPlanContext`.
 
-Usar **React Context API** con hooks personalizados.
+**Justificacion**:
+- Escala adecuada para la aplicacion: dos dominios de estado (auth + meal planning)
+- Sin boilerplate adicional: hooks nativos de React
+- Sin dependencias externas
+- Patron simple de entender y mantener
+- Si la aplicacion crece, migrar a Zustand es trivial
 
-### Justificacion
-
-- **Dos contexts son suficientes**: `AuthContext` y `MealPlanContext` cubren todo el estado global
-- **Sin boilerplate**: No se necesita store, reducers, actions ni middleware
-- **Colocation**: El estado vive cerca de donde se usa
-- **Hooks nativos**: `useAuth()` y `useMealPlan()` son claros y composables
-
-### Cuando reconsiderar
-
-Si el estado global crece significativamente (ej: cache de recetas, preferencias del usuario, estado de formularios complejos), evaluar Zustand o TanStack Query.
+**Consecuencias**:
+- Re-renders innecesarios si no se segmenta bien el estado
+- Sin middleware de side-effects (se maneja con async/await en los handlers)
+- Sin devtools de estado integradas (Redux DevTools)
 
 ---
 
-## ADR-008: Zod sobre Joi
+## ADR-007: Zod sobre Joi para Validacion
 
-**Estado**: Aceptado  
-**Fecha**: 2024-10
+**Estado**: Aceptada
 
-### Contexto
+**Contexto**: Se necesitaba una libreria de validacion para el body de los requests.
 
-Se necesita validacion de entrada para los endpoints del API.
+**Opciones consideradas**:
+- Zod 3.x
+- Joi
+- Yup
+- class-validator
 
-### Decision
+**Decision**: Zod
 
-Usar **Zod 3.x** para validacion y definicion de tipos.
+**Justificacion**:
+- Inferencia de tipos TypeScript nativa con `z.infer<typeof schema>`
+- Los esquemas son la fuente unica de verdad para tipos y validacion
+- API mas moderna y composable que Joi
+- Menor bundle size
+- Sin necesidad de definir tipos e interfaces por separado
+- Validacion sincrona por defecto (mas predecible)
 
-### Justificacion
+**Consecuencias**: Los mensajes de error de Zod son menos legibles out-of-the-box que los de Joi, pero se transforman en el error handler.
 
-- **Inferencia de tipos**: `z.infer<typeof schema>` genera tipos TypeScript automaticamente, evitando duplicacion
-- **TypeScript-first**: Diseñado desde cero para TypeScript
-- **Menor bundle**: Mas ligero que Joi
-- **API composable**: Los schemas se combinan facilmente con `.partial()`, `.extend()`, `.omit()`
-- **Mismo uso en backend y frontend**: Potencial para compartir schemas
+---
 
-### Alternativa rechazada
+## ADR-008: Sistema de Conversion de Unidades
 
-Joi es mas maduro y tiene mayor cantidad de validaciones built-in, pero no ofrece inferencia de tipos nativa y su API esta diseñada para JavaScript, no TypeScript.
+**Estado**: Aceptada
+
+**Contexto**: El algoritmo de lista de compras necesita combinar ingredientes con diferentes unidades de medida.
+
+**Decision**: Sistema basado en tablas de conversion con dos familias (volumen y peso) y unidades base (ml y g respectivamente).
+
+**Justificacion**:
+- Enfoque simple y extensible: agregar una unidad nueva es agregar una linea a la tabla
+- Solo dos familias de conversion (volumen y peso) cubren la mayoria de ingredientes de cocina
+- Las unidades sin conversion (unit, bunch, slices) se manejan como pass-through
+- El formateo inverso (de base a legible) usa umbrales para elegir la unidad mas practica
+- Inmutable: las tablas son `readonly` y las funciones son puras
+
+**Alternativas descartadas**:
+- Libreria externa como `convert-units`: demasiado generica, incluye unidades irrelevantes (temperatura, distancia)
+- API de conversion externa: dependencia de red innecesaria para una operacion local
+
+**Consecuencias**:
+- Las conversiones entre volumen y peso no son posibles (ej: 1 cup de harina no se puede convertir a gramos sin densidad)
+- Los factores de conversion son aproximaciones estandar (1 cup = 236.588 ml)
+- Si un ingrediente aparece con unidades incompatibles en diferentes recetas, se suman sin conversion
 
 ---
 
