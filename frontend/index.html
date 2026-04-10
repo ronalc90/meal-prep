@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MealPrep - Planifica tus comidas</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽️</text></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fffbeb',
+              100: '#fef3c7',
+              200: '#fde68a',
+              300: '#fcd34d',
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706',
+              700: '#b45309',
+              800: '#92400e',
+              900: '#78350f',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    [x-cloak] { display: none !important; }
+
+    .gradient-hero {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 40%, #92400e 100%);
+    }
+
+    .gradient-nav {
+      background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .card-hover {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .meal-cell {
+      min-height: 80px;
+      transition: background-color 0.15s ease;
+    }
+    .meal-cell:hover {
+      background-color: #fffbeb;
+    }
+
+    .progress-bar {
+      transition: width 0.4s ease;
+    }
+
+    .category-badge {
+      font-size: 0.65rem;
+      letter-spacing: 0.05em;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #f9fafb; }
+    ::-webkit-scrollbar-thumb { background: #fcd34d; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+
+    .modal-backdrop {
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen" x-data="app()" x-cloak>
+
+  <!-- ==================== HERO / AUTH (Not Logged In) ==================== -->
+  <template x-if="!token">
+    <div>
+      <!-- Navigation -->
+      <nav class="gradient-nav shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-3xl">🍽️</span>
+            <span class="text-white font-bold text-2xl tracking-tight">MealPrep</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <button @click="authMode = 'login'" class="text-white/90 hover:text-white font-medium px-4 py-2 rounded-lg transition"
+              :class="authMode === 'login' ? 'bg-white/20' : ''">
+              Iniciar Sesion
+            </button>
+            <button @click="authMode = 'register'" class="bg-white text-amber-700 font-semibold px-5 py-2 rounded-lg hover:bg-amber-50 transition shadow">
+              Registrarse
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Hero Section -->
+      <section class="gradient-hero text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
+          <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <!-- Left: Content -->
+            <div>
+              <h1 class="text-5xl lg:text-6xl font-extrabold leading-tight mb-4">
+                Meal<span class="text-amber-200">Prep</span>
+              </h1>
+              <p class="text-xl lg:text-2xl text-amber-100 font-medium mb-6">
+                Planifica tus comidas, ahorra tiempo y dinero
+              </p>
+              <p class="text-amber-100/90 text-lg leading-relaxed mb-8">
+                Planifica tus comidas semanales en minutos. Selecciona recetas, organiza tu calendario y genera tu lista de compras por pasillo del supermercado. Reduce el desperdicio y come mejor.
+              </p>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white/15 backdrop-blur rounded-xl p-4">
+                  <div class="text-2xl mb-1">📅</div>
+                  <h3 class="font-bold text-lg">Calendario semanal</h3>
+                  <p class="text-amber-100 text-sm">Organiza desayuno, almuerzo y cena</p>
+                </div>
+                <div class="bg-white/15 backdrop-blur rounded-xl p-4">
+                  <div class="text-2xl mb-1">📖</div>
+                  <h3 class="font-bold text-lg">Base de recetas</h3>
+                  <p class="text-amber-100 text-sm">Cientos de recetas a tu alcance</p>
+                </div>
+                <div class="bg-white/15 backdrop-blur rounded-xl p-4">
+                  <div class="text-2xl mb-1">🛒</div>
+                  <h3 class="font-bold text-lg">Lista de compras automatica</h3>
+                  <p class="text-amber-100 text-sm">Organizada por pasillo</p>
+                </div>
+                <div class="bg-white/15 backdrop-blur rounded-xl p-4">
+                  <div class="text-2xl mb-1">💰</div>
+                  <h3 class="font-bold text-lg">Ahorro calculado</h3>
+                  <p class="text-amber-100 text-sm">Reduce el desperdicio de alimentos</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Auth Form -->
+            <div class="flex justify-center lg:justify-end">
+              <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md text-gray-800">
+                <!-- Login Form -->
+                <template x-if="authMode === 'login'">
+                  <div class="fade-in">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-1">Bienvenido de vuelta</h2>
+                    <p class="text-gray-500 mb-6">Ingresa a tu cuenta</p>
+
+                    <div x-show="authError" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm" x-text="authError"></div>
+
+                    <form @submit.prevent="login()">
+                      <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Correo electronico</label>
+                        <input type="email" x-model="loginForm.email" required
+                          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition text-gray-900 placeholder-gray-400"
+                          placeholder="tu@correo.com" />
+                      </div>
+                      <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Contrasena</label>
+                        <input type="password" x-model="loginForm.password" required
+                          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition text-gray-900 placeholder-gray-400"
+                          placeholder="Tu contrasena" />
+                      </div>
+                      <button type="submit" :disabled="authLoading"
+                        class="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold py-3 rounded-xl hover:from-amber-600 hover:to-amber-700 transition shadow-lg disabled:opacity-60">
+                        <span x-show="!authLoading">Iniciar Sesion</span>
+                        <span x-show="authLoading" class="flex items-center justify-center gap-2">
+                          <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                          Ingresando...
+                        </span>
+                      </button>
+                    </form>
+                    <p class="text-center text-sm text-gray-500 mt-6">
+                      No tienes cuenta?
+                      <button @click="authMode = 'register'; authError = ''" class="text-amber-600 font-semibold hover:underline">Registrate aqui</button>
+                    </p>
+                  </div>
+                </template>
+
+                <!-- Register Form -->
+                <template x-if="authMode === 'register'">
+                  <div class="fade-in">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-1">Crear cuenta</h2>
+                    <p class="text-gray-500 mb-6">Empieza a planificar tus comidas</p>
+
+                    <div x-show="authError" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm" x-text="authError"></div>
+
+                    <form @submit.prevent="register()">
+                      <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                        <input type="text" x-model="registerForm.name" required
+                          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition text-gray-900 placeholder-gray-400"
+                          placeholder="Tu nombre" />
+                      </div>
+                      <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Correo electronico</label>
+                        <input type="email" x-model="registerForm.email" required
+                          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition text-gray-900 placeholder-gray-400"
+                          placeholder="tu@correo.com" />
+                      </div>
+                      <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Contrasena</label>
+                        <input type="password" x-model="registerForm.password" required minlength="6"
+                          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition text-gray-900 placeholder-gray-400"
+                          placeholder="Minimo 6 caracteres" />
+                      </div>
+                      <button type="submit" :disabled="authLoading"
+                        class="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold py-3 rounded-xl hover:from-amber-600 hover:to-amber-700 transition shadow-lg disabled:opacity-60">
+                        <span x-show="!authLoading">Crear Cuenta</span>
+                        <span x-show="authLoading" class="flex items-center justify-center gap-2">
+                          <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                          Creando cuenta...
+                        </span>
+                      </button>
+                    </form>
+                    <p class="text-center text-sm text-gray-500 mt-6">
+                      Ya tienes cuenta?
+                      <button @click="authMode = 'login'; authError = ''" class="text-amber-600 font-semibold hover:underline">Inicia sesion</button>
+                    </p>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="bg-gray-900 text-gray-400 py-8">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+          <p class="flex items-center justify-center gap-2 text-sm">
+            <span class="text-xl">🍽️</span>
+            <span>MealPrep &copy; 2026 - Creado por Ronald</span>
+          </p>
+        </div>
+      </footer>
+    </div>
+  </template>
+
+  <!-- ==================== DASHBOARD (Logged In) ==================== -->
+  <template x-if="token">
+    <div class="min-h-screen flex flex-col">
+
+      <!-- Top Nav -->
+      <nav class="gradient-nav shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">🍽️</span>
+            <span class="text-white font-bold text-xl tracking-tight">MealPrep</span>
+          </div>
+
+          <!-- Tabs -->
+          <div class="hidden sm:flex items-center gap-1 bg-white/20 rounded-xl p-1">
+            <button @click="currentTab = 'recipes'" class="px-4 py-2 rounded-lg text-sm font-medium transition"
+              :class="currentTab === 'recipes' ? 'bg-white text-amber-700 shadow' : 'text-white hover:bg-white/10'">
+              📖 Recetas
+            </button>
+            <button @click="currentTab = 'mealplan'; loadMealPlan()" class="px-4 py-2 rounded-lg text-sm font-medium transition"
+              :class="currentTab === 'mealplan' ? 'bg-white text-amber-700 shadow' : 'text-white hover:bg-white/10'">
+              📅 Plan Semanal
+            </button>
+            <button @click="currentTab = 'shopping'; loadShoppingList()" class="px-4 py-2 rounded-lg text-sm font-medium transition"
+              :class="currentTab === 'shopping' ? 'bg-white text-amber-700 shadow' : 'text-white hover:bg-white/10'">
+              🛒 Lista de Compras
+            </button>
+          </div>
+
+          <!-- User Menu -->
+          <div class="flex items-center gap-3">
+            <span class="text-white/90 text-sm hidden sm:block" x-text="'Hola, ' + userName"></span>
+            <button @click="logout()" class="bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/30 transition">
+              Salir
+            </button>
+          </div>
+        </div>
+
+        <!-- Mobile Tabs -->
+        <div class="sm:hidden flex items-center gap-1 px-4 pb-3">
+          <button @click="currentTab = 'recipes'" class="flex-1 px-3 py-2 rounded-lg text-xs font-medium transition text-center"
+            :class="currentTab === 'recipes' ? 'bg-white text-amber-700 shadow' : 'text-white bg-white/20'">
+            📖 Recetas
+          </button>
+          <button @click="currentTab = 'mealplan'; loadMealPlan()" class="flex-1 px-3 py-2 rounded-lg text-xs font-medium transition text-center"
+            :class="currentTab === 'mealplan' ? 'bg-white text-amber-700 shadow' : 'text-white bg-white/20'">
+            📅 Plan
+          </button>
+          <button @click="currentTab = 'shopping'; loadShoppingList()" class="flex-1 px-3 py-2 rounded-lg text-xs font-medium transition text-center"
+            :class="currentTab === 'shopping' ? 'bg-white text-amber-700 shadow' : 'text-white bg-white/20'">
+            🛒 Compras
+          </button>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- Notification Toast -->
+        <div x-show="notification" x-transition
+          class="fixed top-20 right-4 z-[60] px-5 py-3 rounded-xl shadow-lg text-white text-sm font-medium"
+          :class="notificationType === 'success' ? 'bg-green-500' : 'bg-red-500'"
+          x-text="notification">
+        </div>
+
+        <!-- ========== TAB: RECETAS ========== -->
+        <div x-show="currentTab === 'recipes'" class="fade-in">
+
+          <!-- Header + Search -->
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h1 class="text-2xl font-bold text-gray-800">Recetas</h1>
+              <p class="text-gray-500 text-sm">Explora y gestiona tus recetas favoritas</p>
+            </div>
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+              <div class="relative flex-1 sm:flex-initial">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <input type="text" x-model="recipeSearch" @input.debounce.400ms="searchRecipes()"
+                  placeholder="Buscar recetas..."
+                  class="pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition w-full sm:w-64" />
+              </div>
+              <button @click="showCreateRecipe = true"
+                class="bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold px-5 py-2.5 rounded-xl hover:from-amber-600 hover:to-amber-700 transition shadow-lg whitespace-nowrap">
+                + Nueva Receta
+              </button>
+            </div>
+          </div>
+
+          <!-- Loading -->
+          <div x-show="recipesLoading" class="flex justify-center py-20">
+            <svg class="animate-spin h-10 w-10 text-amber-500" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+          </div>
+
+          <!-- Recipe Grid -->
+          <div x-show="!recipesLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            <template x-for="recipe in recipes" :key="recipe.id">
+              <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden card-hover cursor-pointer"
+                @click="viewRecipe(recipe.id)">
+                <div class="h-44 bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center relative">
+                  <span class="text-6xl" x-text="getRecipeEmoji(recipe.title)"></span>
+                  <div class="absolute top-3 right-3 bg-white/90 backdrop-blur px-2.5 py-1 rounded-full text-xs font-semibold text-amber-700"
+                    x-show="recipe.calories">
+                    <span x-text="recipe.calories"></span> kcal
+                  </div>
+                </div>
+                <div class="p-4">
+                  <h3 class="font-bold text-gray-800 text-lg mb-1 line-clamp-1" x-text="recipe.title"></h3>
+                  <p class="text-gray-500 text-sm mb-3 line-clamp-2" x-text="recipe.description || 'Deliciosa receta para disfrutar'"></p>
+                  <div class="flex items-center gap-4 text-sm text-gray-500">
+                    <span class="flex items-center gap-1">
+                      <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      <span x-text="(recipe.prepTimeMinutes || 0) + (recipe.cookTimeMinutes || 0) + ' min'"></span>
+                    </span>
+                    <span class="flex items-center gap-1">
+                      <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                      <span x-text="recipe.servings + ' porc.'"></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <!-- Empty State -->
+          <div x-show="!recipesLoading && recipes.length === 0" class="text-center py-20">
+            <div class="text-6xl mb-4">🍳</div>
+            <h3 class="text-xl font-bold text-gray-700 mb-2">No hay recetas todavia</h3>
+            <p class="text-gray-500 mb-6">Crea tu primera receta para empezar</p>
+            <button @click="showCreateRecipe = true"
+              class="bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold px-6 py-3 rounded-xl hover:from-amber-600 hover:to-amber-700 transition shadow-lg">
+              + Crear Receta
+            </button>
+          </div>
+
+          <!-- Pagination -->
+          <div x-show="recipeMeta.total > recipeMeta.limit" class="flex justify-center items-center gap-3 mt-8">
+            <button @click="recipePage--; loadRecipes()" :disabled="recipePage <= 1"
+              class="px-4 py-2 rounded-xl border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition">
+              Anterior
+            </button>
+            <span class="text-sm text-gray-500">
+              Pagina <span x-text="recipePage"></span> de <span x-text="Math.ceil(recipeMeta.total / recipeMeta.limit)"></span>
+            </span>
+            <button @click="recipePage++; loadRecipes()" :disabled="recipePage >= Math.ceil(recipeMeta.total / recipeMeta.limit)"
+              class="px-4 py-2 rounded-xl border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition">
+              Siguiente
+            </button>
+          </div>
+        </div>
+
+        <!-- ========== TAB: PLAN SEMANAL ========== -->
+        <div x-show="currentTab === 'mealplan'" class="fade-in">
+
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h1 class="text-2xl font-bold text-gray-800">Plan Semanal</h1>
+              <p class="text-gray-500 text-sm">Semana del <span x-text="formatWeekDate(currentWeekStart)"></span></p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button @click="changeWeek(-1)" class="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition" title="Semana anterior">
+                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+              </button>
+              <button @click="goToCurrentWeek()" class="px-4 py-2 rounded-xl border border-amber-300 text-amber-700 hover:bg-amber-50 text-sm font-medium transition">
+                Esta semana
+              </button>
+              <button @click="changeWeek(1)" class="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition" title="Semana siguiente">
+                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              </button>
+              <button @click="saveMealPlan()" :disabled="mealPlanSaving"
+                class="bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold px-5 py-2 rounded-xl hover:from-amber-600 hover:to-amber-700 transition shadow-lg disabled:opacity-60 text-sm">
+                <span x-show="!mealPlanSaving">Guardar Plan</span>
+                <span x-show="mealPlanSaving">Guardando...</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Loading -->
+          <div x-show="mealPlanLoading" class="flex justify-center py-20">
+            <svg class="animate-spin h-10 w-10 text-amber-500" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+          </div>
+
+          <!-- Weekly Calendar Grid -->
+          <div x-show="!mealPlanLoading" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[700px]">
+                <thead>
+                  <tr class="bg-gradient-to-r from-amber-50 to-orange-50">
+                    <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">Comida</th>
+                    <template x-for="(day, idx) in dayNames" :key="idx">
+                      <th class="text-center py-3 px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <span x-text="day"></span>
+                        <div class="text-[10px] font-normal text-gray-400 mt-0.5" x-text="getWeekDayDate(idx)"></div>
+                      </th>
+                    </template>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="meal in mealTypes" :key="meal.key">
+                    <tr class="border-t border-gray-100">
+                      <td class="py-3 px-4">
+                        <div class="flex items-center gap-2">
+                          <span x-text="meal.emoji"></span>
+                          <span class="text-sm font-semibold text-gray-700" x-text="meal.label"></span>
+                        </div>
+                      </td>
+                      <template x-for="dayIdx in 7" :key="dayIdx">
+                        <td class="py-2 px-2">
+                          <div class="meal-cell rounded-xl border-2 border-dashed border-gray-200 p-2 cursor-pointer hover:border-amber-300 relative group"
+                            @click="openMealSelector(dayIdx - 1, meal.key)">
+                            <template x-if="getMealAssignment(dayIdx - 1, meal.key)">
+                              <div class="text-center">
+                                <div class="text-xl mb-1" x-text="getRecipeEmoji(getMealAssignment(dayIdx - 1, meal.key).recipeTitle)"></div>
+                                <p class="text-xs font-medium text-gray-700 line-clamp-2 leading-tight" x-text="getMealAssignment(dayIdx - 1, meal.key).recipeTitle"></p>
+                                <button @click.stop="removeMealAssignment(dayIdx - 1, meal.key)"
+                                  class="absolute top-1 right-1 w-5 h-5 bg-red-100 text-red-500 rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:bg-red-200">
+                                  x
+                                </button>
+                              </div>
+                            </template>
+                            <template x-if="!getMealAssignment(dayIdx - 1, meal.key)">
+                              <div class="text-center text-gray-300 py-2">
+                                <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                              </div>
+                            </template>
+                          </div>
+                        </td>
+                      </template>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Meal Plan Stats -->
+          <div x-show="!mealPlanLoading && mealPlanItems.length > 0" class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div class="bg-white rounded-xl border border-gray-100 p-4 text-center shadow-sm">
+              <div class="text-2xl font-bold text-amber-600" x-text="mealPlanItems.length"></div>
+              <div class="text-xs text-gray-500 mt-1">Comidas planeadas</div>
+            </div>
+            <div class="bg-white rounded-xl border border-gray-100 p-4 text-center shadow-sm">
+              <div class="text-2xl font-bold text-green-600" x-text="uniqueRecipesInPlan()"></div>
+              <div class="text-xs text-gray-500 mt-1">Recetas distintas</div>
+            </div>
+            <div class="bg-white rounded-xl border border-gray-100 p-4 text-center shadow-sm">
+              <div class="text-2xl font-bold text-blue-600" x-text="daysWithMeals()"></div>
+              <div class="text-xs text-gray-500 mt-1">Dias cubiertos</div>
+            </div>
+            <div class="bg-white rounded-xl border border-gray-100 p-4 text-center shadow-sm">
+              <div class="text-2xl font-bold text-purple-600" x-text="totalServings()"></div>
+              <div class="text-xs text-gray-500 mt-1">Porciones totales</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== TAB: LISTA DE COMPRAS ========== -->
+        <div x-show="currentTab === 'shopping'" class="fade-in">
+
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h1 class="text-2xl font-bold text-gray-800">Lista de Compras</h1>
+              <p class="text-gray-500 text-sm">Tu lista de compras para la semana</p>
+            </div>
+            <button @click="generateShoppingList()" :disabled="shoppingLoading || !currentMealPlanId"
+              class="bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold px-5 py-2.5 rounded-xl hover:from-amber-600 hover:to-amber-700 transition shadow-lg disabled:opacity-60 text-sm">
+              <span x-show="!shoppingLoading">🛒 Generar Lista</span>
+              <span x-show="shoppingLoading">Generando...</span>
+            </button>
+          </div>
+
+          <!-- No Meal Plan Warning -->
+          <div x-show="!currentMealPlanId && !shoppingLoading" class="text-center py-16">
+            <div class="text-6xl mb-4">📅</div>
+            <h3 class="text-xl font-bold text-gray-700 mb-2">Primero crea un plan semanal</h3>
+            <p class="text-gray-500 mb-6">Necesitas un plan semanal guardado para generar tu lista de compras</p>
+            <button @click="currentTab = 'mealplan'; loadMealPlan()"
+              class="bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold px-6 py-3 rounded-xl hover:from-amber-600 hover:to-amber-700 transition shadow-lg">
+              Ir al Plan Semanal
+            </button>
+          </div>
+
+          <!-- Shopping List Loading -->
+          <div x-show="shoppingLoading" class="flex justify-center py-20">
+            <svg class="animate-spin h-10 w-10 text-amber-500" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+          </div>
+
+          <!-- Shopping List Content -->
+          <div x-show="currentMealPlanId && !shoppingLoading && shoppingList && shoppingList.items && shoppingList.items.length > 0">
+
+            <!-- Progress Bar -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-6">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-sm font-semibold text-gray-700">Progreso de compras</span>
+                <span class="text-sm font-bold" :class="shoppingProgress() === 100 ? 'text-green-600' : 'text-amber-600'"
+                  x-text="shoppingCheckedCount() + ' / ' + shoppingTotalCount() + ' productos'"></span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div class="bg-gradient-to-r from-amber-400 to-amber-600 h-full rounded-full progress-bar"
+                  :style="'width: ' + shoppingProgress() + '%'"></div>
+              </div>
+              <div x-show="shoppingProgress() === 100" class="mt-3 text-center text-green-600 font-semibold text-sm">
+                Todas las compras completadas!
+              </div>
+            </div>
+
+            <!-- Categories -->
+            <div class="space-y-4">
+              <template x-for="category in shoppingCategories()" :key="category">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                  <div class="px-5 py-3 border-b border-gray-100 flex items-center gap-3"
+                    :class="getCategoryBg(category)">
+                    <span class="text-xl" x-text="getCategoryEmoji(category)"></span>
+                    <h3 class="font-bold text-sm uppercase tracking-wider" :class="getCategoryColor(category)" x-text="getCategoryLabel(category)"></h3>
+                    <span class="text-xs text-gray-400 ml-auto"
+                      x-text="getCategoryItems(category).length + ' productos'"></span>
+                  </div>
+                  <ul class="divide-y divide-gray-50">
+                    <template x-for="item in getCategoryItems(category)" :key="item.id">
+                      <li class="px-5 py-3 flex items-center gap-3 hover:bg-gray-50 transition cursor-pointer"
+                        @click="toggleShoppingItem(item)">
+                        <div class="flex-shrink-0">
+                          <div class="w-6 h-6 rounded-md border-2 flex items-center justify-center transition"
+                            :class="item.isChecked ? 'bg-green-500 border-green-500' : 'border-gray-300 hover:border-amber-400'">
+                            <svg x-show="item.isChecked" class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                            </svg>
+                          </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <span class="text-sm font-medium transition"
+                            :class="item.isChecked ? 'text-gray-400 line-through' : 'text-gray-800'"
+                            x-text="item.ingredient?.name || item.ingredientName || item.name"></span>
+                        </div>
+                        <span class="text-sm text-gray-500 flex-shrink-0"
+                          :class="item.isChecked ? 'line-through text-gray-300' : ''"
+                          x-text="formatQuantity(item.quantity, item.unit)"></span>
+                      </li>
+                    </template>
+                  </ul>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- Empty Shopping List (has meal plan but no list generated) -->
+          <div x-show="currentMealPlanId && !shoppingLoading && (!shoppingList || !shoppingList.items || shoppingList.items.length === 0)"
+            class="text-center py-16">
+            <div class="text-6xl mb-4">🛒</div>
+            <h3 class="text-xl font-bold text-gray-700 mb-2">Lista vacia</h3>
+            <p class="text-gray-500 mb-6">Genera tu lista de compras a partir de tu plan semanal</p>
+            <button @click="generateShoppingList()" :disabled="shoppingLoading"
+              class="bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold px-6 py-3 rounded-xl hover:from-amber-600 hover:to-amber-700 transition shadow-lg">
+              Generar Lista de Compras
+            </button>
+          </div>
+        </div>
+      </main>
+
+      <!-- Footer -->
+      <footer class="bg-gray-900 text-gray-400 py-6 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+          <p class="text-sm">🍽️ MealPrep &copy; 2026 - Creado por Ronald</p>
+        </div>
+      </footer>
+    </div>
+  </template>
+
+  <!-- ==================== MODAL: Recipe Detail ==================== -->
+  <div x-show="showRecipeDetail" class="fixed inset-0 z-[60] flex items-center justify-center p-4 modal-backdrop" @click.self="showRecipeDetail = false" x-transition>
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" @click.stop>
+      <template x-if="selectedRecipe">
+        <div>
+          <div class="h-48 bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center relative rounded-t-2xl">
+            <span class="text-7xl" x-text="getRecipeEmoji(selectedRecipe.title)"></span>
+            <button @click="showRecipeDetail = false" class="absolute top-4 right-4 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center hover:bg-white transition shadow">
+              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          <div class="p-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2" x-text="selectedRecipe.title"></h2>
+            <p class="text-gray-500 mb-4" x-text="selectedRecipe.description || ''"></p>
+
+            <div class="flex flex-wrap items-center gap-4 sm:gap-6 mb-6 text-sm text-gray-600">
+              <span class="flex items-center gap-1">
+                <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Preparacion: <span x-text="(selectedRecipe.prepTimeMinutes || 0) + ' min'"></span>
+              </span>
+              <span class="flex items-center gap-1">
+                <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/></svg>
+                Coccion: <span x-text="(selectedRecipe.cookTimeMinutes || 0) + ' min'"></span>
+              </span>
+              <span class="flex items-center gap-1" x-show="selectedRecipe.servings">
+                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span x-text="selectedRecipe.servings + ' porciones'"></span>
+              </span>
+              <span class="flex items-center gap-1" x-show="selectedRecipe.calories">
+                🔥 <span x-text="selectedRecipe.calories + ' kcal'"></span>
+              </span>
+            </div>
+
+            <div x-show="selectedRecipe.ingredients && selectedRecipe.ingredients.length > 0">
+              <h3 class="text-lg font-bold text-gray-800 mb-3">🥘 Ingredientes</h3>
+              <ul class="space-y-2 mb-6">
+                <template x-for="ing in selectedRecipe.ingredients" :key="ing.id || ing.name">
+                  <li class="flex items-center gap-3 py-2 px-3 bg-gray-50 rounded-lg">
+                    <span class="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0"></span>
+                    <span class="flex-1 text-sm text-gray-700" x-text="ing.name"></span>
+                    <span class="text-sm text-gray-500 font-medium" x-text="ing.quantity + ' ' + ing.unit"></span>
+                    <span class="category-badge px-2 py-0.5 rounded-full font-bold uppercase"
+                      :class="getCategoryBadgeClass(ing.category)"
+                      x-text="ing.category" x-show="ing.category"></span>
+                  </li>
+                </template>
+              </ul>
+            </div>
+
+            <button @click="showRecipeDetail = false"
+              class="w-full bg-gray-100 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-200 transition">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: Create Recipe ==================== -->
+  <div x-show="showCreateRecipe" class="fixed inset-0 z-[60] flex items-center justify-center p-4 modal-backdrop" @click.self="showCreateRecipe = false" x-transition>
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" @click.stop>
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-gray-800">Nueva Receta</h2>
+          <button @click="showCreateRecipe = false" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition">
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <form @submit.prevent="createRecipe()">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div class="sm:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Titulo *</label>
+              <input type="text" x-model="newRecipe.title" required
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition"
+                placeholder="Nombre de la receta" />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Descripcion</label>
+              <textarea x-model="newRecipe.description" rows="2"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition resize-none"
+                placeholder="Breve descripcion de la receta"></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Porciones</label>
+              <input type="number" x-model.number="newRecipe.servings" min="1"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Calorias</label>
+              <input type="number" x-model.number="newRecipe.calories" min="1"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition"
+                placeholder="Opcional" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Tiempo prep. (min)</label>
+              <input type="number" x-model.number="newRecipe.prepTimeMinutes" min="0"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Tiempo coccion (min)</label>
+              <input type="number" x-model.number="newRecipe.cookTimeMinutes" min="0"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition" />
+            </div>
+          </div>
+
+          <!-- Ingredients -->
+          <div class="mb-4">
+            <div class="flex items-center justify-between mb-3">
+              <label class="text-sm font-medium text-gray-700">Ingredientes *</label>
+              <button type="button" @click="addIngredient()"
+                class="text-amber-600 text-sm font-semibold hover:text-amber-700">+ Agregar</button>
+            </div>
+            <div class="space-y-3">
+              <template x-for="(ing, idx) in newRecipe.ingredients" :key="idx">
+                <div class="flex items-start gap-2 p-3 bg-gray-50 rounded-xl">
+                  <div class="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <input type="text" x-model="ing.name" required placeholder="Nombre"
+                      class="col-span-2 sm:col-span-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none" />
+                    <input type="number" x-model.number="ing.quantity" required placeholder="Cant." min="0.01" step="0.01"
+                      class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none" />
+                    <input type="text" x-model="ing.unit" required placeholder="Unidad"
+                      class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none" />
+                    <select x-model="ing.category"
+                      class="col-span-2 sm:col-span-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none bg-white">
+                      <option value="PRODUCE">Frutas/Verduras</option>
+                      <option value="DAIRY">Lacteos</option>
+                      <option value="MEAT">Carnes</option>
+                      <option value="PANTRY">Despensa</option>
+                      <option value="FROZEN">Congelados</option>
+                      <option value="BAKERY">Panaderia</option>
+                      <option value="BEVERAGES">Bebidas</option>
+                      <option value="OTHER">Otros</option>
+                    </select>
+                  </div>
+                  <button type="button" @click="removeIngredient(idx)" x-show="newRecipe.ingredients.length > 1"
+                    class="mt-1 w-7 h-7 rounded-full bg-red-100 text-red-500 flex items-center justify-center hover:bg-red-200 transition text-sm flex-shrink-0">
+                    x
+                  </button>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button type="button" @click="showCreateRecipe = false"
+              class="flex-1 bg-gray-100 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-200 transition">
+              Cancelar
+            </button>
+            <button type="submit" :disabled="createRecipeLoading"
+              class="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold py-3 rounded-xl hover:from-amber-600 hover:to-amber-700 transition shadow-lg disabled:opacity-60">
+              <span x-show="!createRecipeLoading">Crear Receta</span>
+              <span x-show="createRecipeLoading">Creando...</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: Meal Selector ==================== -->
+  <div x-show="showMealSelector" class="fixed inset-0 z-[60] flex items-center justify-center p-4 modal-backdrop" @click.self="showMealSelector = false" x-transition>
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-hidden flex flex-col" @click.stop>
+      <div class="p-5 border-b border-gray-100">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-lg font-bold text-gray-800">Seleccionar Receta</h3>
+          <button @click="showMealSelector = false" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition">
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <p class="text-sm text-gray-500 mb-3">
+          <span x-text="dayNames[selectorDay] || ''"></span> -
+          <span x-text="getMealTypeLabel(selectorMealType)"></span>
+        </p>
+        <div class="relative">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input type="text" x-model="selectorSearch" placeholder="Buscar receta..."
+            class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none" />
+        </div>
+      </div>
+      <div class="flex-1 overflow-y-auto p-3">
+        <template x-for="recipe in filteredSelectorRecipes()" :key="recipe.id">
+          <button @click="assignMeal(recipe)"
+            class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-50 transition mb-1">
+            <span class="text-2xl" x-text="getRecipeEmoji(recipe.title)"></span>
+            <div class="flex-1 min-w-0">
+              <p class="font-medium text-gray-800 text-sm truncate" x-text="recipe.title"></p>
+              <p class="text-xs text-gray-500" x-text="(recipe.prepTimeMinutes || 0) + (recipe.cookTimeMinutes || 0) + ' min | ' + recipe.servings + ' porc.'"></p>
+            </div>
+          </button>
+        </template>
+        <div x-show="filteredSelectorRecipes().length === 0" class="text-center py-8 text-gray-400 text-sm">
+          No se encontraron recetas
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== ALPINE.JS APP ==================== -->
+  <script>
+    const API_BASE = 'http://localhost:3004/api';
+
+    function app() {
+      return {
+        // Auth state
+        token: localStorage.getItem('mealprep_token') || '',
+        userName: localStorage.getItem('mealprep_userName') || '',
+        authMode: 'login',
+        authError: '',
+        authLoading: false,
+        loginForm: { email: '', password: '' },
+        registerForm: { name: '', email: '', password: '' },
+
+        // Notification
+        notification: '',
+        notificationType: 'success',
+
+        // Navigation
+        currentTab: 'recipes',
+
+        // Recipes
+        recipes: [],
+        recipesLoading: false,
+        recipeSearch: '',
+        recipePage: 1,
+        recipeMeta: { total: 0, page: 1, limit: 20 },
+
+        // Recipe Detail
+        showRecipeDetail: false,
+        selectedRecipe: null,
+
+        // Create Recipe
+        showCreateRecipe: false,
+        createRecipeLoading: false,
+        newRecipe: {
+          title: '',
+          description: '',
+          servings: 4,
+          prepTimeMinutes: 10,
+          cookTimeMinutes: 20,
+          calories: null,
+          isPublic: true,
+          ingredients: [{ name: '', quantity: 1, unit: 'unidad', category: 'OTHER' }],
+        },
+
+        // Meal Plan
+        mealPlanLoading: false,
+        mealPlanSaving: false,
+        currentMealPlanId: null,
+        mealPlanItems: [],
+        currentWeekStart: '',
+        dayNames: ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'],
+        mealTypes: [
+          { key: 'BREAKFAST', label: 'Desayuno', emoji: '🌅' },
+          { key: 'LUNCH', label: 'Almuerzo', emoji: '☀️' },
+          { key: 'DINNER', label: 'Cena', emoji: '🌙' },
+        ],
+
+        // Meal Selector modal
+        showMealSelector: false,
+        selectorDay: 0,
+        selectorMealType: '',
+        selectorSearch: '',
+
+        // Shopping List
+        shoppingLoading: false,
+        shoppingList: null,
+        shoppingListId: null,
+
+        // ==================== INIT ====================
+        init() {
+          this.currentWeekStart = this.getSunday(new Date()).toISOString().split('T')[0];
+          if (this.token) {
+            this.loadRecipes();
+            this.loadMealPlan();
+          }
+        },
+
+        // ==================== NOTIFICATIONS ====================
+        showNotification(msg, type = 'success') {
+          this.notification = msg;
+          this.notificationType = type;
+          setTimeout(() => { this.notification = ''; }, 3500);
+        },
+
+        // ==================== AUTH ====================
+        async login() {
+          this.authLoading = true;
+          this.authError = '';
+          try {
+            const res = await fetch(`${API_BASE}/auth/login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(this.loginForm),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error?.message || data.message || 'Error al iniciar sesion');
+            this.token = data.token;
+            this.userName = data.user?.name || data.user?.email || 'Usuario';
+            localStorage.setItem('mealprep_token', this.token);
+            localStorage.setItem('mealprep_userName', this.userName);
+            this.loginForm = { email: '', password: '' };
+            this.loadRecipes();
+            this.loadMealPlan();
+          } catch (e) {
+            this.authError = e.message;
+          } finally {
+            this.authLoading = false;
+          }
+        },
+
+        async register() {
+          this.authLoading = true;
+          this.authError = '';
+          try {
+            const res = await fetch(`${API_BASE}/auth/register`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(this.registerForm),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error?.message || data.message || 'Error al registrarse');
+            this.token = data.token;
+            this.userName = data.user?.name || data.user?.email || 'Usuario';
+            localStorage.setItem('mealprep_token', this.token);
+            localStorage.setItem('mealprep_userName', this.userName);
+            this.registerForm = { name: '', email: '', password: '' };
+            this.loadRecipes();
+            this.loadMealPlan();
+          } catch (e) {
+            this.authError = e.message;
+          } finally {
+            this.authLoading = false;
+          }
+        },
+
+        logout() {
+          this.token = '';
+          this.userName = '';
+          localStorage.removeItem('mealprep_token');
+          localStorage.removeItem('mealprep_userName');
+          this.recipes = [];
+          this.mealPlanItems = [];
+          this.shoppingList = null;
+          this.currentMealPlanId = null;
+          this.shoppingListId = null;
+          this.currentTab = 'recipes';
+        },
+
+        authHeaders() {
+          return {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.token}`,
+          };
+        },
+
+        // ==================== RECIPES ====================
+        async loadRecipes() {
+          this.recipesLoading = true;
+          try {
+            const params = new URLSearchParams({
+              page: this.recipePage.toString(),
+              limit: '20',
+            });
+            if (this.recipeSearch) params.set('search', this.recipeSearch);
+            const res = await fetch(`${API_BASE}/recipes?${params}`, {
+              headers: this.authHeaders(),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error?.message || data.message || 'Error al cargar recetas');
+            this.recipes = data.data || data || [];
+            this.recipeMeta = data.meta || { total: this.recipes.length, page: 1, limit: 20 };
+          } catch (e) {
+            if (e.message && (e.message.includes('401') || e.message.includes('token') || e.message.includes('jwt'))) {
+              this.logout();
+            } else {
+              this.showNotification(e.message, 'error');
+            }
+          } finally {
+            this.recipesLoading = false;
+          }
+        },
+
+        searchRecipes() {
+          this.recipePage = 1;
+          this.loadRecipes();
+        },
+
+        async viewRecipe(id) {
+          try {
+            const res = await fetch(`${API_BASE}/recipes/${id}`, {
+              headers: this.authHeaders(),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error?.message || data.message || 'Error al cargar receta');
+            // Flatten nested ingredient structure for display
+            if (data.ingredients) {
+              data.ingredients = data.ingredients.map(ri => ({
+                id: ri.id,
+                name: ri.ingredient?.name || ri.name || '',
+                quantity: ri.quantity,
+                unit: ri.unit,
+                category: ri.ingredient?.category || ri.category || 'OTHER',
+                notes: ri.notes,
+              }));
+            }
+            this.selectedRecipe = data;
+            this.showRecipeDetail = true;
+          } catch (e) {
+            this.showNotification(e.message, 'error');
+          }
+        },
+
+        async createRecipe() {
+          this.createRecipeLoading = true;
+          try {
+            const validIngredients = this.newRecipe.ingredients.filter(i => i.name.trim());
+            if (validIngredients.length === 0) {
+              throw new Error('Agrega al menos un ingrediente');
+            }
+            const body = {
+              title: this.newRecipe.title,
+              description: this.newRecipe.description || undefined,
+              servings: this.newRecipe.servings,
+              prepTimeMinutes: this.newRecipe.prepTimeMinutes,
+              cookTimeMinutes: this.newRecipe.cookTimeMinutes,
+              calories: this.newRecipe.calories || undefined,
+              isPublic: this.newRecipe.isPublic,
+              ingredients: validIngredients,
+            };
+            const res = await fetch(`${API_BASE}/recipes`, {
+              method: 'POST',
+              headers: this.authHeaders(),
+              body: JSON.stringify(body),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error?.message || data.message || 'Error al crear receta');
+            this.showCreateRecipe = false;
+            this.resetNewRecipe();
+            this.showNotification('Receta creada exitosamente');
+            this.loadRecipes();
+          } catch (e) {
+            this.showNotification(e.message, 'error');
+          } finally {
+            this.createRecipeLoading = false;
+          }
+        },
+
+        resetNewRecipe() {
+          this.newRecipe = {
+            title: '',
+            description: '',
+            servings: 4,
+            prepTimeMinutes: 10,
+            cookTimeMinutes: 20,
+            calories: null,
+            isPublic: true,
+            ingredients: [{ name: '', quantity: 1, unit: 'unidad', category: 'OTHER' }],
+          };
+        },
+
+        addIngredient() {
+          this.newRecipe.ingredients.push({ name: '', quantity: 1, unit: 'unidad', category: 'OTHER' });
+        },
+
+        removeIngredient(idx) {
+          this.newRecipe.ingredients.splice(idx, 1);
+        },
+
+        getRecipeEmoji(title) {
+          if (!title) return '🍽️';
+          const t = title.toLowerCase();
+          if (t.includes('pasta') || t.includes('espagueti') || t.includes('spaghetti') || t.includes('lasagna') || t.includes('lasana')) return '🍝';
+          if (t.includes('ensalada') || t.includes('salad')) return '🥗';
+          if (t.includes('huevo') || t.includes('tortilla') || t.includes('omelette')) return '🍳';
+          if (t.includes('carne') || t.includes('bistec') || t.includes('steak') || t.includes('res')) return '🥩';
+          if (t.includes('sopa') || t.includes('caldo') || t.includes('guiso')) return '🍲';
+          if (t.includes('pollo') || t.includes('chicken')) return '🍗';
+          if (t.includes('pizza')) return '🍕';
+          if (t.includes('hamburguesa') || t.includes('burger')) return '🍔';
+          if (t.includes('pescado') || t.includes('salmon') || t.includes('atun') || t.includes('fish')) return '🐟';
+          if (t.includes('arroz') || t.includes('rice')) return '🍚';
+          if (t.includes('pan') || t.includes('bread') || t.includes('tostada')) return '🍞';
+          if (t.includes('taco') || t.includes('burrito') || t.includes('enchilada')) return '🌮';
+          if (t.includes('postre') || t.includes('pastel') || t.includes('torta') || t.includes('cake')) return '🍰';
+          if (t.includes('batido') || t.includes('smoothie') || t.includes('jugo')) return '🥤';
+          if (t.includes('fruta') || t.includes('fruit')) return '🍎';
+          if (t.includes('sandwich') || t.includes('bocadillo')) return '🥪';
+          if (t.includes('cerdo') || t.includes('pork') || t.includes('costilla')) return '🥓';
+          if (t.includes('desayuno') || t.includes('avena') || t.includes('cereal')) return '🥣';
+          const emojis = ['🍝', '🥗', '🍳', '🥩', '🍲', '🍗', '🍕', '🐟', '🍚', '🌮', '🥪', '🥣'];
+          let hash = 0;
+          for (let i = 0; i < t.length; i++) hash = t.charCodeAt(i) + ((hash << 5) - hash);
+          return emojis[Math.abs(hash) % emojis.length];
+        },
+
+        // ==================== MEAL PLAN ====================
+        getSunday(date) {
+          const d = new Date(date);
+          const day = d.getDay();
+          d.setDate(d.getDate() - day);
+          return d;
+        },
+
+        formatWeekDate(dateStr) {
+          if (!dateStr) return '';
+          const d = new Date(dateStr + 'T00:00:00');
+          const options = { day: 'numeric', month: 'long', year: 'numeric' };
+          return d.toLocaleDateString('es-ES', options);
+        },
+
+        getWeekDayDate(dayIdx) {
+          if (!this.currentWeekStart) return '';
+          const d = new Date(this.currentWeekStart + 'T00:00:00');
+          d.setDate(d.getDate() + dayIdx);
+          return d.getDate() + '/' + (d.getMonth() + 1);
+        },
+
+        changeWeek(direction) {
+          const d = new Date(this.currentWeekStart + 'T00:00:00');
+          d.setDate(d.getDate() + (direction * 7));
+          this.currentWeekStart = d.toISOString().split('T')[0];
+          this.currentMealPlanId = null;
+          this.mealPlanItems = [];
+          this.shoppingList = null;
+          this.shoppingListId = null;
+          this.loadMealPlan();
+        },
+
+        goToCurrentWeek() {
+          this.currentWeekStart = this.getSunday(new Date()).toISOString().split('T')[0];
+          this.currentMealPlanId = null;
+          this.mealPlanItems = [];
+          this.shoppingList = null;
+          this.shoppingListId = null;
+          this.loadMealPlan();
+        },
+
+        async loadMealPlan() {
+          this.mealPlanLoading = true;
+          try {
+            const res = await fetch(`${API_BASE}/meal-plans/week/${this.currentWeekStart}`, {
+              headers: this.authHeaders(),
+            });
+            if (res.status === 404) {
+              this.currentMealPlanId = null;
+              this.mealPlanItems = [];
+              return;
+            }
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error?.message || data.message || 'Error al cargar plan');
+            // API returns null when no meal plan exists for this week
+            if (!data) {
+              this.currentMealPlanId = null;
+              this.mealPlanItems = [];
+              return;
+            }
+            this.currentMealPlanId = data.id;
+            this.mealPlanItems = (data.items || []).map(item => ({
+              recipeId: item.recipeId || item.recipe?.id,
+              dayOfWeek: item.dayOfWeek,
+              mealType: item.mealType,
+              servings: item.servings || 1,
+              recipeTitle: item.recipe?.title || item.recipeTitle || 'Receta',
+            }));
+          } catch (e) {
+            this.currentMealPlanId = null;
+            this.mealPlanItems = [];
+          } finally {
+            this.mealPlanLoading = false;
+          }
+        },
+
+        getMealAssignment(dayOfWeek, mealType) {
+          return this.mealPlanItems.find(
+            i => i.dayOfWeek === dayOfWeek && i.mealType === mealType
+          );
+        },
+
+        removeMealAssignment(dayOfWeek, mealType) {
+          this.mealPlanItems = this.mealPlanItems.filter(
+            i => !(i.dayOfWeek === dayOfWeek && i.mealType === mealType)
+          );
+        },
+
+        openMealSelector(dayOfWeek, mealType) {
+          this.selectorDay = dayOfWeek;
+          this.selectorMealType = mealType;
+          this.selectorSearch = '';
+          this.showMealSelector = true;
+        },
+
+        filteredSelectorRecipes() {
+          if (!this.selectorSearch) return this.recipes;
+          const q = this.selectorSearch.toLowerCase();
+          return this.recipes.filter(r => r.title.toLowerCase().includes(q));
+        },
+
+        assignMeal(recipe) {
+          this.mealPlanItems = this.mealPlanItems.filter(
+            i => !(i.dayOfWeek === this.selectorDay && i.mealType === this.selectorMealType)
+          );
+          this.mealPlanItems.push({
+            recipeId: recipe.id,
+            dayOfWeek: this.selectorDay,
+            mealType: this.selectorMealType,
+            servings: 1,
+            recipeTitle: recipe.title,
+          });
+          this.showMealSelector = false;
+        },
+
+        getMealTypeLabel(type) {
+          const labels = { BREAKFAST: 'Desayuno', LUNCH: 'Almuerzo', DINNER: 'Cena', SNACK: 'Merienda' };
+          return labels[type] || type;
+        },
+
+        async saveMealPlan() {
+          this.mealPlanSaving = true;
+          try {
+            const items = this.mealPlanItems.map(i => ({
+              recipeId: i.recipeId,
+              dayOfWeek: i.dayOfWeek,
+              mealType: i.mealType,
+              servings: i.servings || 1,
+            }));
+
+            let res;
+            if (this.currentMealPlanId) {
+              res = await fetch(`${API_BASE}/meal-plans/${this.currentMealPlanId}`, {
+                method: 'PUT',
+                headers: this.authHeaders(),
+                body: JSON.stringify({ items }),
+              });
+            } else {
+              res = await fetch(`${API_BASE}/meal-plans`, {
+                method: 'POST',
+                headers: this.authHeaders(),
+                body: JSON.stringify({
+                  weekStartDate: this.currentWeekStart,
+                  items,
+                }),
+              });
+            }
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error?.message || data.message || 'Error al guardar plan');
+
+            this.currentMealPlanId = data.id;
+            this.showNotification('Plan semanal guardado');
+            this.loadMealPlan();
+          } catch (e) {
+            this.showNotification(e.message, 'error');
+          } finally {
+            this.mealPlanSaving = false;
+          }
+        },
+
+        uniqueRecipesInPlan() {
+          return new Set(this.mealPlanItems.map(i => i.recipeId)).size;
+        },
+
+        daysWithMeals() {
+          return new Set(this.mealPlanItems.map(i => i.dayOfWeek)).size;
+        },
+
+        totalServings() {
+          return this.mealPlanItems.reduce((sum, i) => sum + (i.servings || 1), 0);
+        },
+
+        // ==================== SHOPPING LIST ====================
+        async loadShoppingList() {
+          if (!this.currentMealPlanId) return;
+          this.shoppingLoading = true;
+          try {
+            const res = await fetch(`${API_BASE}/shopping-lists/${this.currentMealPlanId}`, {
+              headers: this.authHeaders(),
+            });
+            if (res.status === 404) {
+              this.shoppingList = null;
+              this.shoppingListId = null;
+              return;
+            }
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error?.message || data.message || 'Error al cargar lista');
+            this.shoppingList = data;
+            this.shoppingListId = data.id;
+          } catch (e) {
+            this.shoppingList = null;
+            this.shoppingListId = null;
+          } finally {
+            this.shoppingLoading = false;
+          }
+        },
+
+        async generateShoppingList() {
+          if (!this.currentMealPlanId) {
+            this.showNotification('Primero guarda un plan semanal', 'error');
+            return;
+          }
+          this.shoppingLoading = true;
+          try {
+            const res = await fetch(`${API_BASE}/shopping-lists/generate`, {
+              method: 'POST',
+              headers: this.authHeaders(),
+              body: JSON.stringify({ mealPlanId: this.currentMealPlanId }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error?.message || data.message || 'Error al generar lista');
+            this.shoppingList = data;
+            this.shoppingListId = data.id;
+            this.showNotification('Lista de compras generada');
+          } catch (e) {
+            this.showNotification(e.message, 'error');
+          } finally {
+            this.shoppingLoading = false;
+          }
+        },
+
+        async toggleShoppingItem(item) {
+          if (!this.shoppingListId) return;
+          const newChecked = !item.isChecked;
+          item.isChecked = newChecked;
+          try {
+            await fetch(`${API_BASE}/shopping-lists/${this.shoppingListId}/items/${item.id}`, {
+              method: 'PATCH',
+              headers: this.authHeaders(),
+              body: JSON.stringify({ isChecked: newChecked }),
+            });
+          } catch (e) {
+            item.isChecked = !newChecked;
+          }
+        },
+
+        shoppingCategories() {
+          if (!this.shoppingList?.items) return [];
+          const cats = [...new Set(this.shoppingList.items.map(i => i.category || 'OTHER'))];
+          const order = ['PRODUCE', 'DAIRY', 'MEAT', 'PANTRY', 'FROZEN', 'BAKERY', 'BEVERAGES', 'OTHER'];
+          return cats.sort((a, b) => {
+            const ai = order.indexOf(a);
+            const bi = order.indexOf(b);
+            return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+          });
+        },
+
+        getCategoryItems(category) {
+          if (!this.shoppingList?.items) return [];
+          return this.shoppingList.items.filter(i => (i.category || 'OTHER') === category);
+        },
+
+        shoppingTotalCount() {
+          return this.shoppingList?.items?.length || 0;
+        },
+
+        shoppingCheckedCount() {
+          return this.shoppingList?.items?.filter(i => i.isChecked).length || 0;
+        },
+
+        shoppingProgress() {
+          const total = this.shoppingTotalCount();
+          if (total === 0) return 0;
+          return Math.round((this.shoppingCheckedCount() / total) * 100);
+        },
+
+        formatQuantity(qty, unit) {
+          if (!qty && qty !== 0) return '';
+          const n = parseFloat(qty);
+          if (isNaN(n)) return '';
+          const display = Number.isInteger(n) ? n.toString() : n.toFixed(1);
+          return display + ' ' + (unit || '');
+        },
+
+        getCategoryEmoji(cat) {
+          const emojis = {
+            PRODUCE: '🥬', DAIRY: '🧀', MEAT: '🥩', PANTRY: '🫙',
+            FROZEN: '🧊', BAKERY: '🍞', BEVERAGES: '🥤', OTHER: '📦',
+          };
+          return emojis[cat] || '📦';
+        },
+
+        getCategoryLabel(cat) {
+          const labels = {
+            PRODUCE: 'Frutas y Verduras', DAIRY: 'Lacteos', MEAT: 'Carnes y Pescados',
+            PANTRY: 'Despensa', FROZEN: 'Congelados', BAKERY: 'Panaderia',
+            BEVERAGES: 'Bebidas', OTHER: 'Otros',
+          };
+          return labels[cat] || cat;
+        },
+
+        getCategoryBg(cat) {
+          const bgs = {
+            PRODUCE: 'bg-green-50', DAIRY: 'bg-blue-50', MEAT: 'bg-red-50',
+            PANTRY: 'bg-amber-50', FROZEN: 'bg-cyan-50', BAKERY: 'bg-yellow-50',
+            BEVERAGES: 'bg-purple-50', OTHER: 'bg-gray-50',
+          };
+          return bgs[cat] || 'bg-gray-50';
+        },
+
+        getCategoryColor(cat) {
+          const colors = {
+            PRODUCE: 'text-green-700', DAIRY: 'text-blue-700', MEAT: 'text-red-700',
+            PANTRY: 'text-amber-700', FROZEN: 'text-cyan-700', BAKERY: 'text-yellow-700',
+            BEVERAGES: 'text-purple-700', OTHER: 'text-gray-700',
+          };
+          return colors[cat] || 'text-gray-700';
+        },
+
+        getCategoryBadgeClass(cat) {
+          const classes = {
+            PRODUCE: 'bg-green-100 text-green-700', DAIRY: 'bg-blue-100 text-blue-700',
+            MEAT: 'bg-red-100 text-red-700', PANTRY: 'bg-amber-100 text-amber-700',
+            FROZEN: 'bg-cyan-100 text-cyan-700', BAKERY: 'bg-yellow-100 text-yellow-700',
+            BEVERAGES: 'bg-purple-100 text-purple-700', OTHER: 'bg-gray-100 text-gray-700',
+          };
+          return classes[cat] || 'bg-gray-100 text-gray-700';
+        },
+      };
+    }
+  </script>
+</body>
+</html>
