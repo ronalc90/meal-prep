@@ -484,6 +484,14 @@
             </div>
           </div>
 
+          <!-- Empty state hint for meal plan -->
+          <div x-show="!mealPlanLoading && mealPlanItems.length === 0" class="mt-6 bg-amber-50 border border-amber-200 rounded-2xl p-6 text-center">
+            <div class="text-4xl mb-3">📋</div>
+            <h3 class="text-lg font-bold text-amber-800 mb-2">Tu plan semanal esta vacio</h3>
+            <p class="text-amber-700 text-sm mb-3">Haz clic en cualquier celda del calendario para asignar una receta. Luego presiona <strong>Guardar Plan</strong> para guardar tus cambios.</p>
+            <p class="text-amber-600 text-xs">Una vez guardado, podras generar tu lista de compras automaticamente.</p>
+          </div>
+
           <!-- Meal Plan Stats -->
           <div x-show="!mealPlanLoading && mealPlanItems.length > 0" class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div class="bg-white rounded-xl border border-gray-100 p-4 text-center shadow-sm">

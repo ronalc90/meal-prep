@@ -76,7 +76,7 @@ describe('MealPlan API', () => {
       expect(res.body).not.toBeNull();
     });
 
-    it('should return null if no plan exists', async () => {
+    it('should return structured response if no plan exists', async () => {
       const user = await createTestUser();
 
       const res = await request(app)
@@ -84,6 +84,8 @@ describe('MealPlan API', () => {
         .set('Authorization', `Bearer ${user.token}`);
 
       expect(res.status).toBe(200);
+      expect(res.body.data).toBeNull();
+      expect(res.body.message).toBeDefined();
     });
   });
 

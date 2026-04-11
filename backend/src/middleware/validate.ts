@@ -3,14 +3,14 @@ import { ZodSchema } from 'zod';
 
 export function validate(schema: ZodSchema) {
   return (req: Request, _res: Response, next: NextFunction): void => {
-    schema.parse(req.body);
+    req.body = schema.parse(req.body);
     next();
   };
 }
 
 export function validateQuery(schema: ZodSchema) {
   return (req: Request, _res: Response, next: NextFunction): void => {
-    schema.parse(req.query);
+    req.query = schema.parse(req.query);
     next();
   };
 }

@@ -49,7 +49,7 @@ export async function getCurrentMealPlan(userId: string) {
     include: getMealPlanInclude(),
   });
 
-  return mealPlan;
+  return mealPlan ?? { data: null, weekStartDate: weekStart.toISOString(), message: 'No meal plan found for current week' };
 }
 
 export async function getMealPlanByWeek(userId: string, weekStartDate: string) {

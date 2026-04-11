@@ -8,8 +8,10 @@ const config: Config = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
-  setupFilesAfterSetup: [],
+  setupFilesAfterEnv: [],
   clearMocks: true,
+  // SQLite does not support concurrent writes; run test suites sequentially
+  maxWorkers: 1,
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/index.ts',

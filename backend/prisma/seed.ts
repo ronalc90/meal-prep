@@ -316,8 +316,17 @@ async function main() {
 
   console.log(`Created user: ${user.email}`);
 
-  // Create ingredients and recipes
+  // Create public system recipes (no owner - visible to all users)
   for (const recipe of recipes) {
+    // Skip if recipe already exists (idempotent seed)
+    const existing = await prisma.recipe.findFirst({
+      where: { title: recipe.title, isPublic: true, userId: null },
+    });
+    if (existing) {
+      console.log(`Recipe already exists: ${recipe.title}`);
+      continue;
+    }
+
     // Upsert ingredients
     const ingredientRecords = await Promise.all(
       recipe.ingredients.map(async (ing) => {
@@ -334,10 +343,9 @@ async function main() {
       }),
     );
 
-    // Create recipe
+    // Create recipe without userId (system/public recipe)
     await prisma.recipe.create({
       data: {
-        userId: user.id,
         title: recipe.title,
         description: recipe.description,
         servings: recipe.servings,
