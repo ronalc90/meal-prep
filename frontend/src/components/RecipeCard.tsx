@@ -30,7 +30,7 @@ export default function RecipeCard({ recipe, onSelect, selectable }: RecipeCardP
         </span>
         <span className="flex items-center">
           <UsersIcon />
-          <span className="ml-1">{recipe.servings} servings</span>
+          <span className="ml-1">{recipe.servings} porc.</span>
         </span>
         {recipe.calories && (
           <span className="flex items-center">

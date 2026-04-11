@@ -145,7 +145,7 @@ export default function RecipeForm({ onSubmit, onCancel, initialData, submitLabe
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Cook Time (min)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Tiempo de Coccion (min)</label>
           <input
             type="number"
             className="input-field"
@@ -164,16 +164,16 @@ export default function RecipeForm({ onSubmit, onCancel, initialData, submitLabe
             className="h-4 w-4 text-primary-600 rounded border-gray-300"
           />
           <label htmlFor="isPublic" className="ml-2 text-sm text-gray-700">
-            Make recipe public
+            Hacer receta publica
           </label>
         </div>
       </div>
 
       <div>
         <div className="flex justify-between items-center mb-3">
-          <h3 className="text-sm font-medium text-gray-700">Ingredients</h3>
+          <h3 className="text-sm font-medium text-gray-700">Ingredientes</h3>
           <button type="button" onClick={addIngredient} className="btn-secondary text-sm">
-            + Add Ingredient
+            + Agregar Ingrediente
           </button>
         </div>
 
@@ -183,14 +183,14 @@ export default function RecipeForm({ onSubmit, onCancel, initialData, submitLabe
               <input
                 type="text"
                 className="input-field flex-1"
-                placeholder="Name"
+                placeholder="Nombre"
                 value={ing.name}
                 onChange={(e) => updateIngredient(index, 'name', e.target.value)}
               />
               <input
                 type="number"
                 className="input-field w-20"
-                placeholder="Qty"
+                placeholder="Cant."
                 step="0.1"
                 value={ing.quantity}
                 onChange={(e) => updateIngredient(index, 'quantity', e.target.value)}
@@ -198,7 +198,7 @@ export default function RecipeForm({ onSubmit, onCancel, initialData, submitLabe
               <input
                 type="text"
                 className="input-field w-20"
-                placeholder="Unit"
+                placeholder="Unidad"
                 value={ing.unit}
                 onChange={(e) => updateIngredient(index, 'unit', e.target.value)}
               />
@@ -229,10 +229,10 @@ export default function RecipeForm({ onSubmit, onCancel, initialData, submitLabe
 
       <div className="flex justify-end space-x-3">
         <button type="button" onClick={onCancel} className="btn-secondary">
-          Cancel
+          Cancelar
         </button>
         <button type="submit" disabled={isSubmitting} className="btn-primary">
-          {isSubmitting ? 'Saving...' : submitLabel}
+          {isSubmitting ? 'Guardando...' : submitLabel}
         </button>
       </div>
     </form>

@@ -20,7 +20,7 @@ export default function RecipeDetailPage() {
     recipesApi
       .get(id)
       .then((data) => setRecipe(data as Recipe))
-      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load recipe'))
+      .catch((err) => setError(err instanceof Error ? err.message : 'Error al cargar la receta'))
       .finally(() => setIsLoading(false));
   }, [id]);
 
