@@ -2,7 +2,7 @@
 
 ## Requisitos
 
-- Node.js >= 18
+- Node.js >= 22
 - npm >= 9
 
 ## 1. Clonar el Repositorio

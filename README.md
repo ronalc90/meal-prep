@@ -4,7 +4,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Node.js-18+-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js">
+  <img src="https://img.shields.io/badge/Node.js-22+-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js">
   <img src="https://img.shields.io/badge/Express-4.x-000000?style=flat-square&logo=express&logoColor=white" alt="Express">
   <img src="https://img.shields.io/badge/Prisma-5.x-2D3748?style=flat-square&logo=prisma&logoColor=white" alt="Prisma">
   <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React">
@@ -65,7 +65,7 @@ Single Page Application en React 18 con React Router v6. Estado global gestionad
 
 | Capa | Tecnologia |
 |------|-----------|
-| **Runtime** | Node.js 18+ |
+| **Runtime** | Node.js 22+ |
 | **Backend Framework** | Express 4.x |
 | **ORM** | Prisma 5.x |
 | **Base de Datos** | SQLite (desarrollo) / PostgreSQL (produccion) |
@@ -85,7 +85,7 @@ Single Page Application en React 18 con React Router v6. Estado global gestionad
 
 ### Prerrequisitos
 
-- Node.js >= 18
+- Node.js >= 22
 - npm >= 9
 
 ### Backend
