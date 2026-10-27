@@ -131,7 +131,12 @@ curl https://tu-backend.railway.app/api/health
 Crear `backend/Dockerfile`:
 
 ```dockerfile
-FROM node:18-alpine AS builder
+# Prisma 5 necesita el binario `openssl` en Alpine para detectar OpenSSL 3;
+# va en una etapa comun para que el build y la ejecucion usen el mismo motor.
+FROM node:22-alpine AS base
+RUN apk add --no-cache openssl
+
+FROM base AS builder
 
 WORKDIR /app
 
@@ -144,7 +149,7 @@ RUN npx prisma generate
 COPY . .
 RUN npm run build
 
-FROM node:18-alpine AS runner
+FROM base AS runner
 
 WORKDIR /app
 

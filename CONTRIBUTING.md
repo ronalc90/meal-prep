@@ -4,7 +4,7 @@ Gracias por tu interes en contribuir a MealPrep. Esta guia te ayudara a comenzar
 
 ## Requisitos Previos
 
-- Node.js >= 18
+- Node.js >= 22
 - npm >= 9
 - Git
 

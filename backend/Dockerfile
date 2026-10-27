@@ -1,4 +1,12 @@
-FROM node:22-alpine AS build
+# Prisma 5 necesita el binario `openssl` para detectar la version de OpenSSL en
+# Alpine: en musl solo busca libssl en /lib y Alpine la instala en /usr/lib. Sin
+# el, `prisma generate` elige el motor para OpenSSL 1.1 y el contenedor cae al
+# arrancar (libssl.so.1.1 no existe). Va en una etapa base comun para que el
+# motor generado en el build coincida con el que se detecta en ejecucion.
+FROM node:22-alpine AS base
+RUN apk add --no-cache openssl
+
+FROM base AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
@@ -8,7 +16,7 @@ COPY tsconfig.json ./
 COPY src ./src
 RUN npm run build
 
-FROM node:22-alpine
+FROM base
 RUN addgroup -S app && adduser -S app -G app
 WORKDIR /app
 COPY --from=build /app/dist ./dist

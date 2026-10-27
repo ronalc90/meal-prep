@@ -77,7 +77,7 @@ frontend/
 ### Prerrequisitos
 
 - Docker y Docker Compose
-- Node.js 18+
+- Node.js 22+
 - npm
 
 ### Levantar el entorno completo
